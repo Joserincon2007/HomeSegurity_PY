@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registro Usuario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{ font-family: 'Poppins', sans-serif; }
+
+        body{
+            background: linear-gradient(135deg, #0f2027, #265363, #1b3e6b);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .register-card{
+            max-width: 750px;
+            border-radius: 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .card-header-custom{
+            background: linear-gradient(135deg, #1a73e8, #0d628a);
+            padding: 25px;
+            text-align: center;
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .card-header-custom h4{
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: 0.5px;
+        }
+
+        .card-header-custom p{
+            margin: 5px 0 0;
+            opacity: 0.85;
+            font-size: 0.85rem;
+        }
+
+        .form-label{
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1a73e8;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-control{
+            height: 42px;
+            font-size: 0.9rem;
+            border: 2px solid #e3f2fd;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: #f8fbff;
+        }
+
+        .form-control:focus{
+            border-color: #42a5f5;
+            box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.2);
+            background: #fff;
+        }
+
+        .btn-register{
+            height: 46px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1a73e8, #42a5f5);
+            color: white;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-register:hover{
+            background: linear-gradient(135deg, #1557b0, #1a73e8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(26, 115, 232, 0.35);
+            color: white;
+        }
+
+        .input-icon{
+            position: relative;
+        }
+
+        .input-icon i{
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #90caf9;
+            font-size: 0.85rem;
+        }
+
+        .input-icon .form-control{
+            padding-left: 36px;
+        }
+
+        .divider{
+            height: 3px;
+            width: 60px;
+            background: linear-gradient(90deg, #1a73e8, #4fc3f7);
+            border-radius: 2px;
+            margin: 0 auto 15px;
+        }
+
+        .alert-success{
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border: 1px solid #90caf9;
+            color: #1565c0;
+            border-radius: 10px;
+        }
+
+        a.link-login{
+            color: #1a73e8;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        a.link-login:hover{
+            color: #0d47a1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container d-flex justify-content-center align-items-center">
+    <div class="card shadow-lg register-card">
+
+        <div class="card-header-custom">
+            <h4> Registro </h4>
+            <p>Completa tus datos para crear una cuenta</p>
+        </div>
+
+        <div class="card-body p-4">
+            <form action="/agregar-usuarios" method="POST">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Primer Nombre</label>
+                        <input type="text" class="form-control" name="primerNombre" placeholder="Ej: Juan" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Primer Apellido</label>
+                        <input type="text" class="form-control" name="primerApellido" placeholder="Ej: Pérez" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Documento</label>
+                        <input type="text" class="form-control" name="num_documento" placeholder="Nº de documento" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" name="correo" placeholder="correo@ejemplo.com" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" name="telefono" placeholder="+57 300 000 0000" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Edad</label>
+                        <input type="number" class="form-control" name="edad" placeholder="25" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-control" name="direccion" placeholder="Calle, ciudad..." required>
+                    </div>
+                   <div class="col-12">
+    <label class="form-label">Contraseña</label>
+
+    <div class="input-group">
+        <input 
+            type="password" 
+            class="form-control" 
+            name="contraseña" 
+            id="password"
+            placeholder="••••••••" 
+            required>
+
+        <button 
+            class="btn btn-outline-secondary" 
+            type="button"
+            onclick="togglePassword()">
+            👁
+        </button>
+    </div>
+</div>
+                <input type="hidden" name="estadoCuenta" value="ACTIVO">
+
+                {% if message %}
+                <div class="alert alert-success alert-dismissible fade show py-2 mt-3">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                <button class="btn btn-register w-100 mt-4">
+                    🚀 Registrar Usuario
+                </button>
+
+                <p class="text-center mt-3 mb-0">
+                    <a href="/" class="text-decoration-none link-login">
+                        ¿Ya tienes cuenta? <strong>Inicia sesión</strong>
+                    </a>
+                </p>
+            </form>
+
+            <hr>
+        </div>
+    </div>
+</div>
+<script>
+function togglePassword() {
+    const input = document.getElementById("password");
+
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
+}
+</script>
+
+</body>
+</html>
+
