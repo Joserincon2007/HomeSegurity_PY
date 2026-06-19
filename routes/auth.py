@@ -26,6 +26,7 @@ def generar_password():
 # ==============================
 @auth.route('/agregar-usuarios', methods=['POST'])
 def agregarUsuarios():
+    TEMPLATE_HTML = 'agregarUsuarios.html' 
     try:
         # 1. Obtención de datos del formulario
         nombre = request.form.get('primerNombre')
@@ -37,28 +38,24 @@ def agregarUsuarios():
         direccion = request.form.get('direccion')
         password = request.form.get('contraseña')
 
-        # Conversión segura de edad a entero
+        # 🔥 LÍNEA DE CONTROL: Esto imprimirá en tu consola qué está llegando exactamente
+        print(f"DEBUG REGISTRO -> Nombre: {nombre}, Correo: {correo}, Password: {password}")
+
         edad = int(edad_raw) if edad_raw and edad_raw.isdigit() else None
 
         # 2. Validación de campos obligatorios
         if not nombre or not correo or not password:
-            return render_template(
-                'agregarUsuarios.html',
-                message="Faltan datos obligatorios"
-            )
+            print("❌ Se detuvo en: Campos obligatorios vacíos")
+            return render_template(TEMPLATE_HTML, message="Faltan datos obligatorios")
 
-        # 3. Requisitos mínimos de seguridad para la contraseña (Backend)
+        # 3. Requisitos mínimos de seguridad
         if len(password) < 8:
-            return render_template(
-                'agregarUsuarios.html',
-                message="La contraseña debe tener al menos 8 caracteres."
-            )
+            print("❌ Se detuvo en: Contraseña menor a 8 caracteres")
+            return render_template(TEMPLATE_HTML, message="La contraseña debe tener al menos 8 caracteres.")
         
         if not re.search(r"[A-Z]", password) or not re.search(r"[a-z]", password) or not re.search(r"[0-9]", password):
-            return render_template(
-                'agregarUsuarios.html',
-                message="La contraseña debe incluir mayúsculas, minúsculas y números."
-            )
+            print("❌ Se detuvo en: Falta mayúscula, minúscula o número")
+            return render_template(TEMPLATE_HTML, message="La contraseña debe incluir mayúsculas, minúsculas y números.")
 
         # 4. Encriptar contraseña de manera irreversible
         password_encriptada = generate_password_hash(password)
