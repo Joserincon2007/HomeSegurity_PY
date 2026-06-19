@@ -1,15 +1,16 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from extensions import mysql
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from extensions import mysql, db
 from routes.agente import agente
+from routes.correo import enviar_correo_credenciales
+from models.avaluos import Avaluo
+from models.vivienda import Vivienda
 import uuid
 import random
 import string
-from models.avaluos import Avaluo
-from extensions import db
-from routes.correo import enviar_correo_credenciales
-from models.vivienda import Vivienda
+import re
 
+# 🔥 IMPORTANTE: Herramientas para el manejo seguro de contraseñas
+from werkzeug.security import generate_password_hash, check_password_hash
 
 auth = Blueprint('auth', __name__)
 
@@ -25,46 +26,64 @@ def generar_password():
 # ==============================
 @auth.route('/agregar-usuarios', methods=['POST'])
 def agregarUsuarios():
-
     try:
+        # 1. Obtención de datos del formulario
         nombre = request.form.get('primerNombre')
         apellido = request.form.get('primerApellido')
         documento = request.form.get('num_documento')
         correo = request.form.get('correo')
         telefono = request.form.get('telefono')
-        edad = request.form.get('edad')
+        edad_raw = request.form.get('edad')
         direccion = request.form.get('direccion')
         password = request.form.get('contraseña')
 
-        
+        # Conversión segura de edad a entero
+        edad = int(edad_raw) if edad_raw and edad_raw.isdigit() else None
 
+        # 2. Validación de campos obligatorios
         if not nombre or not correo or not password:
             return render_template(
                 'agregarUsuarios.html',
-                message="Faltan datos"
+                message="Faltan datos obligatorios"
             )
 
+        # 3. Requisitos mínimos de seguridad para la contraseña (Backend)
+        if len(password) < 8:
+            return render_template(
+                'agregarUsuarios.html',
+                message="La contraseña debe tener al menos 8 caracteres."
+            )
+        
+        if not re.search(r"[A-Z]", password) or not re.search(r"[a-z]", password) or not re.search(r"[0-9]", password):
+            return render_template(
+                'agregarUsuarios.html',
+                message="La contraseña debe incluir mayúsculas, minúsculas y números."
+            )
+
+        # 4. Encriptar contraseña de manera irreversible
+        password_encriptada = generate_password_hash(password)
+
+        # 5. Operación en Base de Datos
         cur = mysql.connection.cursor()
 
         sql = """
         INSERT INTO usuario
         (primerNombre, primerApellido, contraseña, edad,
          direccion, num_documento, correo, telefono, estadoCuenta)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'ACTIVO')
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'ACTIVO')
         """
 
+        # 🔥 CORREGIDO: El orden de los parámetros coincide perfectamente con el SQL
         cur.execute(sql, (
-            nombre, apellido, password, edad,
+            nombre, apellido, password_encriptada, edad,
             direccion, documento, correo, telefono
         ))
 
         mysql.connection.commit()
-
-        # obtener id insertado
         usuario_id = cur.lastrowid
         cur.close()
 
-        # 🔥 guardar sesión
+        # 6. Guardar sesión
         session['idUsuario'] = usuario_id
         session['usuario'] = nombre
         session['apellido'] = apellido
@@ -74,7 +93,7 @@ def agregarUsuarios():
         return redirect(url_for('auth.login'))
 
     except Exception as e:
-        print("ERROR REGISTRO:", e)
+        print("❌ ERROR REGISTRO:", str(e))
         return render_template(
             'agregarUsuarios.html',
             message="Error al registrar"
@@ -84,30 +103,30 @@ def agregarUsuarios():
 # ==============================
 # LOGIN
 # ==============================
-@auth.route('/login', methods=['POST',"GET"])
+@auth.route('/login', methods=['POST', "GET"])
 def login():
-
     # 👉 SOLO mostrar login
     if request.method == "GET":
         return render_template("index.html")
 
     # 👉 VALIDAR LOGIN
     correo = request.form.get('nombre_usuario')
-    password = request.form.get('contrasena')
+    password_ingresada = request.form.get('contrasena')
 
     cur = mysql.connection.cursor()
 
+    # Buscamos al usuario únicamente por su correo
     cur.execute("""
-        SELECT idUsuario, primerNombre,
-               primerApellido, correo, rol
+        SELECT idUsuario, primerNombre, primerApellido, correo, rol, contraseña
         FROM usuario
-        WHERE correo=%s AND contraseña=%s
-    """, (correo, password))
+        WHERE correo=%s
+    """, (correo,))
 
     user = cur.fetchone()
     cur.close()
 
-    if user:
+    # 🔥 VERIFICACIÓN SEGURA: Comparamos el hash de la BD con la clave ingresada
+    if user and check_password_hash(user[5], password_ingresada):
 
         session['idUsuario'] = user[0]
         session['usuario'] = user[1]
@@ -132,9 +151,11 @@ def login():
     )
 
 
+# ==============================
+# VIVIENDAS
+# ==============================
 @auth.route("/viviendas")
 def ver_vivienda():
-
     viviendas = Vivienda.query.filter_by(
         estado_publicacion="ACTIVO"
     ).all()
@@ -145,21 +166,18 @@ def ver_vivienda():
     )
 
 
-
 # ==============================
 # SOLICITAR ADMIN
 # ==============================
-
 @auth.route('/solicitar-admin-form')
 def solicitar_admin_form():
     if "usuario" in session:
         return render_template("clientes/solicitud-credenciales.html")
-    return render_template("index")
+    return render_template("index.html")
 
 
 @auth.route('/solicitar_admin', methods=['POST'])
 def solicitar_admin():
-
     nombre = request.form['nombre']
     apellido = request.form['apellido']
     correo = request.form['correo']
@@ -170,14 +188,11 @@ def solicitar_admin():
     cur.execute("""
         INSERT INTO solicitudes_admin
         (nombre, apellido, correo, cargo, estado)
-        VALUES (%s,%s,%s,%s,'PENDIENTE')
-    """,(nombre,apellido,correo,cargo))
+        VALUES (%s, %s, %s, %s, 'PENDIENTE')
+    """, (nombre, apellido, correo, cargo))
 
     mysql.connection.commit()
     cur.close()
 
     flash('success_modal') 
     return redirect(url_for('auth.solicitar_admin_form'))
-
-
-
