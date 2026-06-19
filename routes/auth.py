@@ -36,7 +36,7 @@ def agregarUsuarios():
         telefono = request.form.get('telefono')
         edad_raw = request.form.get('edad')
         direccion = request.form.get('direccion')
-        password = request.form.get('contraseña')
+        password = request.form.get('contrasena')
 
         # 🔥 LÍNEA DE CONTROL: Esto imprimirá en tu consola qué está llegando exactamente
         print(f"DEBUG REGISTRO -> Nombre: {nombre}, Correo: {correo}, Password: {password}")
@@ -65,7 +65,7 @@ def agregarUsuarios():
 
         sql = """
         INSERT INTO usuario
-        (primerNombre, primerApellido, contraseña, edad,
+        (primerNombre, primerApellido, contrasena, edad,
          direccion, num_documento, correo, telefono, estadoCuenta)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'ACTIVO')
         """
