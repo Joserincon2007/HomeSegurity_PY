@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from extensions import mysql, db
 from routes.agente import agente
@@ -9,7 +10,7 @@ import random
 import string
 import re
 
-# 🔥 IMPORTANTE: Herramientas para el manejo seguro de contraseñas
+# 🔥 Herramientas para el manejo seguro de contraseñas
 from werkzeug.security import generate_password_hash, check_password_hash
 
 auth = Blueprint('auth', __name__)
@@ -60,17 +61,16 @@ def agregarUsuarios():
         # 4. Encriptar contraseña de manera irreversible
         password_encriptada = generate_password_hash(password)
 
-        # 5. Operación en Base de Datos
+        # 5. Operación en Base de Datos (Mantiene 'contraseña' con la eñe de tu BD)
         cur = mysql.connection.cursor()
 
         sql = """
         INSERT INTO usuario
-        (primerNombre, primerApellido, contrasena, edad,
+        (primerNombre, primerApellido, contraseña, edad,
          direccion, num_documento, correo, telefono, estadoCuenta)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'ACTIVO')
         """
 
-        # 🔥 CORREGIDO: El orden de los parámetros coincide perfectamente con el SQL
         cur.execute(sql, (
             nombre, apellido, password_encriptada, edad,
             direccion, documento, correo, telefono
@@ -92,7 +92,7 @@ def agregarUsuarios():
     except Exception as e:
         print("❌ ERROR REGISTRO:", str(e))
         return render_template(
-            'agregarUsuarios.html',
+            TEMPLATE_HTML,
             message="Error al registrar"
         )
 
@@ -112,9 +112,9 @@ def login():
 
     cur = mysql.connection.cursor()
 
-    # Buscamos al usuario únicamente por su correo
+    # Buscamos al usuario únicamente por su correo (Mantiene 'contraseña' con eñe)
     cur.execute("""
-        SELECT idUsuario, primerNombre, primerApellido, correo, rol, contrasena
+        SELECT idUsuario, primerNombre, primerApellido, correo, rol, contraseña
         FROM usuario
         WHERE correo=%s
     """, (correo,))

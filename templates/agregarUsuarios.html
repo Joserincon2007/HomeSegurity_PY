@@ -142,7 +142,7 @@
         </div>
 
         <div class="card-body p-4">
-        <form action="{{ url_for('auth.agregarUsuarios') }}" method="POST">
+            <form action="{{ url_for('auth.agregarUsuarios') }}" method="POST">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Primer Nombre</label>
@@ -172,26 +172,26 @@
                         <label class="form-label">Dirección</label>
                         <input type="text" class="form-control" name="direccion" placeholder="Calle, ciudad..." required>
                     </div>
-                   <div class="col-12">
-    <label class="form-label">Contraseña</label>
+                    <div class="col-12">
+                        <label class="form-label">Contraseña</label>
+                        <div class="input-group">
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                name="contrasena" 
+                                id="password"
+                                placeholder="••••••••" 
+                                required>
+                            <button 
+                                class="btn btn-outline-secondary" 
+                                type="button"
+                                onclick="togglePassword()">
+                                👁
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="input-group">
-        <input 
-            type="password" 
-            class="form-control" 
-            name="contraseña" 
-            id="password"
-            placeholder="••••••••" 
-            required>
-
-        <button 
-            class="btn btn-outline-secondary" 
-            type="button"
-            onclick="togglePassword()">
-            👁
-        </button>
-    </div>
-</div>
                 <input type="hidden" name="estadoCuenta" value="ACTIVO">
 
                 {% if message %}
@@ -210,12 +210,15 @@
                         ¿Ya tienes cuenta? <strong>Inicia sesión</strong>
                     </a>
                 </p>
-            </form> <hr>
-        </div> </div> </div>
+            </form> 
+            <hr>
+        </div> 
+    </div> 
+</div>
+
 <script>
 function togglePassword() {
     const input = document.getElementById("password");
-
     if (input.type === "password") {
         input.type = "text";
     } else {
@@ -226,4 +229,3 @@ function togglePassword() {
 
 </body>
 </html>
-
