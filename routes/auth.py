@@ -114,7 +114,7 @@ def login():
 
     # Buscamos al usuario únicamente por su correo
     cur.execute("""
-        SELECT idUsuario, primerNombre, primerApellido, correo, rol, contraseña
+        SELECT idUsuario, primerNombre, primerApellido, correo, rol, contrasena
         FROM usuario
         WHERE correo=%s
     """, (correo,))
