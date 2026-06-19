@@ -31,69 +31,40 @@ def agregarUsuarios():
     TEMPLATE = "agregarUsuarios.html"
 
     try:
-        # 🔍 VER TODO LO QUE LLEGA
         data = request.form.to_dict()
         logging.info(f"FORM DATA: {data}")
 
-        # ==========================
-        # CAPTURA DE DATOS
-        # ==========================
-        nombre = request.form.get('primerNombre')
-        apellido = request.form.get('primerApellido')
-        documento = request.form.get('num_documento')
-        correo = request.form.get('correo')
-        telefono = request.form.get('telefono')
-        edad = request.form.get('edad')
-        direccion = request.form.get('direccion')
-        password = request.form.get('contrasena')
-        estadoCuenta = request.form.get('estadoCuenta', 'ACTIVO')
+        nombre = data.get('primerNombre')
+        apellido = data.get('primerApellido')
+        documento = data.get('num_documento')
+        correo = data.get('correo')
+        telefono = data.get('telefono')
+        edad = data.get('edad')
+        direccion = data.get('direccion')
+        password = data.get('contrasena')
+        estadoCuenta = data.get('estadoCuenta', 'ACTIVO')
 
-        # ==========================
-        # VALIDACIÓN BÁSICA
-        # ==========================
         if not nombre or not correo or not password:
-            return render_template(TEMPLATE, message="Faltan datos obligatorios")
+            return render_template(TEMPLATE, message="Faltan datos")
 
-        # ==========================
-        # VALIDACIÓN PASSWORD
-        # ==========================
-        if len(password) < 8:
-            return render_template(TEMPLATE, message="Mínimo 8 caracteres")
-
-        if not re.search(r"[A-Z]", password) or not re.search(r"[a-z]", password) or not re.search(r"[0-9]", password):
-            return render_template(TEMPLATE, message="Debe incluir mayúscula, minúscula y número")
-
-        # ==========================
-        # HASH PASSWORD
-        # ==========================
-        password_hash = generate_password_hash(password)
-
-        # ==========================
-        # CONEXIÓN MYSQL
-        # ==========================
         cur = mysql.connection.cursor()
 
-        # 🔴 VERIFICAR SI CORREO EXISTE
         cur.execute("SELECT idUsuario FROM usuario WHERE correo=%s", (correo,))
-        existe = cur.fetchone()
+        if cur.fetchone():
+            cur.close()
+            return render_template(TEMPLATE, message="Correo ya existe")
 
-        if existe:
-            return render_template(TEMPLATE, message="El correo ya está registrado")
-
-        # ==========================
-        # INSERT USUARIO
-        # ==========================
         sql = """
         INSERT INTO usuario
         (primerNombre, primerApellido, contraseña, edad,
          direccion, num_documento, correo, telefono, estadoCuenta, rol)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'USER')
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'USER')
         """
 
         cur.execute(sql, (
             nombre,
             apellido,
-            password_hash,
+            generate_password_hash(password),
             edad,
             direccion,
             documento,
@@ -103,30 +74,13 @@ def agregarUsuarios():
         ))
 
         mysql.connection.commit()
-        usuario_id = cur.lastrowid
         cur.close()
-
-        logging.info(f"Usuario creado ID: {usuario_id}")
-
-        # ==========================
-        # SESIÓN
-        # ==========================
-        session['idUsuario'] = usuario_id
-        session['usuario'] = nombre
-        session['apellido'] = apellido
-        session['correo'] = correo
-        session['rol'] = "USER"
 
         return redirect(url_for('auth.login'))
 
     except Exception as e:
-        logging.exception("ERROR EN REGISTRO")
-
-        return render_template(
-            TEMPLATE,
-            message=f"Error del servidor: {str(e)}"
-        )
-
+        logging.exception("ERROR REGISTRO")
+        return f"ERROR: {str(e)}"
 
 # ==========================
 # LOGIN
