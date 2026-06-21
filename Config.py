@@ -9,8 +9,7 @@ class Config:
     MYSQL_HOST = 'localhost'
     MYSQL_USER = 'root'
     MYSQL_PASSWORD = ''
-    MYSQL_DB = 'homesegurity_py'
-
+    MYSQL_DB = 'homesegurity_py'    
     SQLALCHEMY_DATABASE_URI = "mysql://root:@localhost/homesegurity_py"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

@@ -121,6 +121,7 @@ tr:hover{
     display:none;
     justify-content:center;
     align-items:center;
+    z-index: 1000;
 }
 
 .popup{
@@ -167,11 +168,17 @@ tr:hover{
     margin-bottom:40px;
 }
 
-.chart-box{
-    background:#020617;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 5px 20px rgba(0,0,0,.4);
+.chart-box {
+    background: #020617;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,.4);
+    
+    /* ESTO DETIENE EL PARPADEO/MOVIMIENTO */
+    position: relative;
+    height: 320px;       /* Forzamos un alto fijo para el contenedor */
+    width: 100%;         /* Se adapta al grid horizontalmente */
+    overflow: hidden;    /* Evita que el canvas altere al padre */
 }
 
 .chart-box h3{
@@ -185,13 +192,12 @@ tr:hover{
 
 <body>
 
-<!-- ===== NAVBAR ===== -->
 <div class="navbar">
     <div class="logo">Panel Administrativo</div>
         <div class="nav-end">
         {% if session.usuario %}
             <span class="text-light me-2">
-              Bienvenido Administrdor  👤 {{ session.usuario }} {{ session.apellido }}
+                Bienvenido Administrador 👤 {{ session.usuario }} {{ session.apellido }}
             </span>
         {% endif %}
     </div>
@@ -207,13 +213,11 @@ tr:hover{
     </div>
 </div>
 
-<!-- ===== CONTENIDO ===== -->
 <div class="container">
 
 <h2>Solicitudes de Credenciales</h2>
 
 <table>
-
 <tr>
 <th>Nombre</th>
 <th>Apellido</th>
@@ -245,13 +249,10 @@ tr:hover{
 ❌ Rechazar
 </a>
 </td>
-
 </tr>
 {% endfor %}
-
 </table>
 
-<!-- ===== GRAFICAS ===== -->
 <div class="charts">
 
     <div class="chart-box">
@@ -273,21 +274,20 @@ tr:hover{
 
 </div>
 
-<!-- ===== POPUP CONFIRMACION ===== -->
 <div class="popup-bg" id="popupBg">
     <div class="popup">
         <h3>¿Confirmar aprobación?</h3>
         <p>Se enviará el correo con las credenciales.</p>
 
         <button onclick="continuar()">Confirmar</button>
-        <button onclick="cerrarPopup()">Cancelar</button>
+        <button onclick="cerrarPopup()" style="background:#475569;">Cancelar</button>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-
+// --- Lógica del Popup ---
 let enlaceDestino = null;
 
 function confirmar(event, url){
@@ -304,6 +304,79 @@ function continuar(){
     window.location.href = enlaceDestino;
 }
 
+// --- Configuración de Gráficas (Chart.js) ---
+
+// Opciones globales estéticas para el modo oscuro
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false, // <-- Crucial para que no se muevan solas
+    resizeDelay: 50,            // <-- Da un respiro de 50ms antes de redibujar si se cambia el tamaño de la pantalla
+    plugins: {
+        legend: { labels: { color: '#cbd5e1' } }
+    },
+    scales: {
+        x: { grid: { color: '#334155' }, ticks: { color: '#cbd5e1' } },
+        y: { grid: { color: '#334155' }, ticks: { color: '#cbd5e1' } }
+    }
+};
+
+// 1. Gráfica de Usuarios (Líneas)
+const ctxUsuarios = document.getElementById('usuariosChart').getContext('2d');
+new Chart(ctxUsuarios, {
+    type: 'line',
+    data: {
+        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Nuevos Usuarios',
+            data: [12, 19, 3, 5, 2, 3], // Reemplaza con datos de tu backend
+            borderColor: '#60a5fa',
+            backgroundColor: 'rgba(96, 165, 250, 0.2)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: chartOptions
+});
+
+// 2. Gráfica de Citas (Barras)
+const ctxCitas = document.getElementById('citasChart').getContext('2d');
+new Chart(ctxCitas, {
+    type: 'bar',
+    data: {
+        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Citas Concretadas',
+            data: [5, 10, 15, 8, 12, 20], // Reemplaza con datos de tu backend
+            backgroundColor: '#34d399',
+            borderRadius: 5
+        }]
+    },
+    options: chartOptions
+});
+
+// 3. Gráfica de Solicitudes (Dona/Pie)
+const ctxSolicitudes = document.getElementById('solicitudesChart').getContext('2d');
+new Chart(ctxSolicitudes, {
+    type: 'doughnut',
+    data: {
+        labels: ['Aprobadas', 'Pendientes', 'Rechazadas'],
+        datasets: [{
+            data: [30, 15, 5], // Reemplaza con datos de tu backend
+            backgroundColor: ['#16a34a', '#eab308', '#dc2626'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { 
+                position: 'bottom',
+                labels: { color: '#cbd5e1' } 
+            }
+        }
+    }
+});
 </script>
 
 </body>
