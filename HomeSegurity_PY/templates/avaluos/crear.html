@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proceso de Avalúo - homeSegurity</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --dark-navy: #0a192f;
+            --royal-blue: #1e3a8a;
+            --steel-blue: #3b82f6;
+            --light-blue-bg: #f0f4f8;
+            --accent-yellow: #ffc107;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .card-custom {
+            border-radius: 15px;
+            overflow: hidden;
+            border: none;
+            background-color: #ffffff;
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, var(--dark-navy) 0%, var(--royal-blue) 100%);
+            padding: 2.5rem 2rem;
+        }
+
+        .process-section {
+            background-color: var(--light-blue-bg);
+            border-radius: 12px;
+            border-left: 5px solid var(--steel-blue);
+            transition: transform 0.3s ease;
+        }
+
+        .process-section:hover {
+            transform: scale(1.02);
+        }
+
+        .btn-primary-custom {
+            background-color: var(--royal-blue);
+            border: none;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--steel-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .price-tag {
+            color: var(--royal-blue);
+            letter-spacing: -1px;
+        }
+
+        .form-label {
+            color: var(--dark-navy);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .form-control:focus {
+            border-color: var(--steel-blue);
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.15);
+        }
+
+        .list-group-item {
+            border: none;
+            padding: 12px 0;
+        }
+
+        .hr-text {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #adb5bd;
+            margin: 20px 0;
+        }
+
+        .hr-text::before, .hr-text::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .hr-text:not(:empty)::before { margin-right: .5em; }
+        .hr-text:not(:empty)::after { margin-left: .5em; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5 mb-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('agente.catalogo_publico') }}" class="text-decoration-none text-muted">Catálogo</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Generar Avalúo</li>
+        </ol>
+    </nav>
+
+    <div class="card card-custom shadow-lg">
+        <div class="card-header header-gradient text-white shadow-sm">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="bg-white bg-opacity-10 p-3 rounded-circle">
+                        <i class="fas fa-calculator fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col">
+                    <h2 class="mb-0 fw-bold">Informe de Avalúo Técnico</h2>
+                    <p class="mb-0 text-white-50">
+                        <i class="fas fa-map-marker-alt me-1"></i> {{ vivienda.direccion }} | Ref:{{ vivienda.id_vivienda }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4 p-lg-5">
+            <div class="row g-5">
+                <div class="col-md-6">
+                    <div class="p-4 mb-4 rounded-3 border bg-white">
+                        <h4 class="text-dark fw-bold mb-4">
+                            <i class="fas fa-chart-line me-2 text-primary"></i>Análisis de Propiedad
+                        </h4>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-secondary">Superficie Privada</span>
+                                <span class="badge bg-primary rounded-pill px-3">{{ vivienda.area_m2 }} m²</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-secondary">Ubicación Registrada</span>
+                                <span class="fw-bold text-dark">{{ vivienda.localidad }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-secondary">Clasificación Socioeconómica</span>
+                                <span class="fw-bold text-dark">Estrato {{ vivienda.estrato }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-secondary">Valor Comercial del Sector (m²)</span>
+                                <span class="text-success fw-bold">$ {{ "{:,.0f}".format(precio_m2) }}</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="process-section p-4 text-center shadow-sm">
+                        <p class="text-uppercase small fw-bold text-secondary mb-1">Precio Estimado Sugerido</p>
+                        <h1 id="precio" class="display-4 fw-bold price-tag mb-0">
+                            $ {{ "{:,.0f}".format(precio) }}
+                        </h1>
+                        <small class="text-muted italic">Cálculo basado en el algoritmo de Precios Bogotá 2026</small>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4 class="text-dark fw-bold mb-4">
+                        <i class="fas fa-user-check me-2 text-primary"></i>Datos del Solicitante
+                    </h4>
+                    <p class="text-secondary mb-4 small">Al completar este formulario, el sistema generará un documento legal en PDF y lo enviará a su casilla de correo de forma automática.</p>
+                    
+             <form method="POST" action="{{ url_for('avaluos.procesar_avaluo') }}" id="formAvaluo">
+                            
+                <input type="hidden" name="vivienda_id" value="{{ vivienda.id_vivienda }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nombre Completo</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-user text-muted"></i></span>
+                                <input name="nombre" class="form-control" placeholder="Ej: Jhonatan Rincón" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Correo Electrónico de Contacto</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-envelope text-muted"></i></span>
+                                <input name="correo" type="email" class="form-control" placeholder="ejemplo@correo.com" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-primary-custom btn-lg text-white fw-bold">
+                                <i class="fas fa-paper-plane me-2"></i>Emitir Avalúo y Enviar
+                            </button>
+
+                            <button type="button" class="btn btn-outline-dark btn-md" onclick="previsualizarPDF()">
+                                <i class="fas fa-file-pdf me-2 text-danger"></i>Previsualizar Reporte PDF
+                            </button>
+                            
+                            <div class="hr-text text-uppercase small fw-bold">Opciones Adicionales</div>
+                            
+                            <a href="{{ url_for('citas.crear_cita', id_vivienda=vivienda.id_vivienda) }}" class="btn btn-warning btn-lg fw-bold shadow-sm">
+                                <i class="fas fa-calendar-check me-2"></i>Solicitar Inspección Física
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-light text-center py-3 border-top">
+            <p class="mb-0 text-muted small">
+                © 2026 <strong>homeSegurity</strong> | Sistema de Seguridad y Gestión de Avalúos Inmobiliarios
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function previsualizarPDF() {
+    const id = "{{ vivienda.id_vivienda }}";
+    if (id) {
+        // Abre el endpoint de previsualización en una pestaña nueva
+        window.open(`/avaluos/preview_pdf/${id}`, '_blank');
+    } else {
+        alert("Error: No se pudo identificar la vivienda.");
+    }
+}
+</script>
+
+</body>
+</html>

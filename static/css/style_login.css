@@ -1,0 +1,178 @@
+/* =========================
+   BASE GENERAL
+========================= */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Fondo con overlay elegante */
+body {
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* Capa oscura encima del fondo */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.2));
+  z-index: 0;
+}
+
+/* =========================
+   CONTENEDOR LOGIN
+========================= */
+.form-signin {
+  position: relative;
+  z-index: 1;
+  max-width: 360px;
+  padding: 2rem;
+  margin: auto;
+  border-radius: 20px;
+
+  /* Glass effect */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  animation: fadeIn 1s ease;
+}
+
+/* Animación entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   LOGO
+========================= */
+.form-signin img {
+  transition: transform 0.4s ease;
+}
+
+.form-signin img:hover {
+  transform: scale(1.1) rotate(2deg);
+}
+
+/* =========================
+   INPUTS
+========================= */
+.form-floating {
+  position: relative;
+}
+
+.form-floating input {
+  border-radius: 12px;
+  border: none;
+  padding: 12px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+/* Texto dentro */
+.form-floating input::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+/* Focus efecto glow */
+.form-floating input:focus {
+  outline: none;
+  background: rgba(0,0,0,0.8);
+  box-shadow: 0 0 10px rgba(0,123,255,0.7);
+}
+
+/* Labels */
+.form-floating label {
+  color: #ddd;
+}
+
+/* =========================
+   CHECKBOX
+========================= */
+.form-check-label {
+  color: #ccc;
+}
+
+/* =========================
+   BOTÓN
+========================= */
+.btn-primary {
+  border-radius: 12px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+/* Hover botón */
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,123,255,0.5);
+}
+
+/* Click efecto */
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+/* =========================
+   LINK REGISTRO
+========================= */
+a {
+  color: #4db8ff;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px #4db8ff;
+}
+
+/* =========================
+   ALERTA ERROR
+========================= */
+.alert {
+  border-radius: 10px;
+  font-size: 14px;
+  animation: shake 0.4s ease;
+}
+
+/* Animación error */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+/* =========================
+   TEXTO FOOTER
+========================= */
+.text-body-secondary {
+  color: #ccc !important;
+  font-size: 13px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+  .form-signin {
+    margin: 20px;
+    padding: 1.5rem;
+  }
+}

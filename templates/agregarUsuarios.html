@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registro Usuario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        *{ font-family: 'Poppins', sans-serif; }
+
+        body{
+            background: linear-gradient(135deg, #0f2027, #265363, #1b3e6b);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .register-card{
+            max-width: 750px;
+            width: 100%;
+            border-radius: 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .card-header-custom{
+            background: linear-gradient(135deg, #1a73e8, #0d628a);
+            padding: 30px 25px;
+            text-align: center;
+            color: white;
+        }
+
+        .card-header-custom h4{
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.6rem;
+            letter-spacing: 0.5px;
+        }
+
+        .card-header-custom p{
+            margin: 5px 0 0;
+            opacity: 0.85;
+            font-size: 0.9rem;
+        }
+
+        .form-label{
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group-text {
+            background-color: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            border-right: none;
+            color: #64748b;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .form-control, .form-select{
+            height: 44px;
+            font-size: 0.9rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .input-group > .form-control {
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .input-group > .password-input {
+            border-radius: 0;
+        }
+
+        .form-control:focus, .form-select:focus{
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+            background: #fff;
+        }
+
+        /* Indicador de requisitos de contraseña */
+        .password-requirements {
+            font-size: 0.8rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+        .requirement-item.valid { color: #16a34a; }
+        .requirement-item.valid i::before { content: "\F26B"; } /* Check icon */
+
+        .btn-register{
+            height: 48px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1a73e8, #3b82f6);
+            color: white;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-register:hover{
+            background: linear-gradient(135deg, #1557b0, #1a73e8);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
+            color: white;
+        }
+
+        .link-login{
+            color: #1a73e8;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .link-login:hover{
+            color: #0d47a1;
+            text-decoration: underline !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container d-flex justify-content-center align-items-center my-5">
+    <div class="card shadow-lg register-card">
+
+        <div class="card-header-custom">
+            <h4><i class="bi bi-person-plus-fill me-2"></i>Crear Cuenta</h4>
+            <p>Por favor, ingresa los datos mínimos obligatorios de acceso</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <form action="/agregar-usuarios" method="POST" class="needs-validation" novalidate>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Primer Nombre</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" name="primerNombre" placeholder="Ej: Juan" required pattern="^[a-zA-ZÀ-ÿ\s]{3,20}$">
+                            <div class="invalid-feedback">Mínimo 3 letras, sin números.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Primer Apellido</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" name="primerApellido" placeholder="Ej: Pérez" required pattern="^[a-zA-ZÀ-ÿ\s]{3,20}$">
+                            <div class="invalid-feedback">Mínimo 3 letras, sin números.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Documento de Identidad</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                            <input type="text" class="form-control" name="num_documento" placeholder="Solo números" required pattern="^[0-9]{6,12}$">
+                            <div class="invalid-feedback">Ingresa un documento válido (6 a 12 dígitos).</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Correo Electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" name="correo" placeholder="correo@ejemplo.com" required>
+                            <div class="invalid-feedback">Formato de correo electrónico inválido.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono Celular</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input type="tel" class="form-control" name="telefono" placeholder="Ej: 3001234567" required pattern="^[0-9]{7,15}$">
+                            <div class="invalid-feedback">Número telefónico inválido (solo números).</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Edad (Mínimo 18 años)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                            <input type="number" class="form-control" name="edad" min="18" max="100" placeholder="18" required>
+                            <div class="invalid-feedback">Debes ser mayor de edad (&ge; 18 años).</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label class="form-label">Dirección Residencial</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                            <input type="text" class="form-control" name="direccion" placeholder="Calle, Avenida, Ciudad..." required minlength="10">
+                            <div class="invalid-feedback">Por favor detalla tu dirección (mínimo 10 caracteres).</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label class="form-label">Contraseña de Acceso</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input 
+                                type="password" 
+                                class="form-control password-input" 
+                                name="contraseña" 
+                                id="password"
+                                placeholder="••••••••" 
+                                required
+                                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}">
+                            <button 
+                                class="btn btn-outline-secondary" 
+                                type="button"
+                                style="border: 2px solid #e2e8f0; border-left: none; border-radius: 0 10px 10px 0;"
+                                onclick="togglePassword()">
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
+                            <div class="invalid-feedback">La contraseña no cumple las políticas del sistema.</div>
+                        </div>
+                        
+                        <div class="password-requirements">
+                            <div class="requirement-item" id="req-length"><i class="bi bi-circle"></i> Mínimo 8 caracteres</div>
+                            <div class="requirement-item" id="req-upper"><i class="bi bi-circle"></i> Al menos una letra mayúscula</div>
+                            <div class="requirement-item" id="req-number"><i class="bi bi-circle"></i> Al menos un número</div>
+                            <div class="requirement-item" id="req-special"><i class="bi bi-circle"></i> Al menos un carácter especial (@$!%*?&)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="estadoCuenta" value="ACTIVO">
+
+                {% if message %}
+                <div class="alert alert-success alert-dismissible fade show py-2 mt-4">
+                    <i class="bi bi-check-circle-fill me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-register w-100 mt-4 shadow-sm">
+                    <i class="bi bi-rocket-takeoff me-2"></i> Finalizar Registro e Ingresar
+                </button>
+
+                <p class="text-center mt-4 mb-0">
+                    <a href="/" class="text-decoration-none link-login">
+                        ¿Ya tienes cuenta? <strong>Inicia sesión</strong>
+                    </a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Manejo visual de visualización de contraseña
+function togglePassword() {
+    const input = document.getElementById("password");
+    const icon = document.getElementById("toggleIcon");
+
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace("bi-eye", "bi-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.replace("bi-eye-slash", "bi-eye");
+    }
+}
+
+// Validación reactiva de contraseña
+const passwordInput = document.getElementById('password');
+const reqLength = document.getElementById('req-length');
+const reqUpper = document.getElementById('req-upper');
+const reqNumber = document.getElementById('req-number');
+const reqSpecial = document.getElementById('req-special');
+
+passwordInput.addEventListener('input', function() {
+    const val = passwordInput.value;
+    
+    // Validar Largo
+    if(val.length >= 8) { reqLength.classList.add('valid'); } 
+    else { reqLength.classList.remove('valid'); }
+    
+    // Validar Mayúscula
+    if(/[A-Z]/.test(val)) { reqUpper.classList.add('valid'); } 
+    else { reqUpper.classList.remove('valid'); }
+    
+    // Validar Número
+    if(/\d/.test(val)) { reqNumber.classList.add('valid'); } 
+    else { reqNumber.classList.remove('valid'); }
+    
+    // Validar Especial
+    if(/[\W_]/.test(val)) { reqSpecial.classList.add('valid'); } 
+    else { reqSpecial.classList.remove('valid'); }
+});
+
+// Desactivar el envío por defecto si hay campos inválidos (Estilo Bootstrap 5)
+(function () {
+  'use strict'
+  var forms = document.querySelectorAll('.needs-validation')
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+</script>
+
+</body>
+</html>

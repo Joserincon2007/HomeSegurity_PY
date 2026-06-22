@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>HomeSecurity</title>
+
+	<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/color-modes.js') }}"></script>
+
+	<link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style_login.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style_temas.css') }}">
+
+	<style>
+	/* 🔥 BOTÓN VER VIVIENDAS */
+	.btn-viviendas {
+		position: fixed;
+		right: 30px;
+		top: 50%;
+		transform: translateY(-50%);
+		padding: 10px 18px;
+		font-size: 14px;
+		border-radius: 10px;
+		background: rgba(107, 110, 113, 0.8);
+		color: white;
+		border: none;
+		backdrop-filter: blur(10px);
+		transition: all 0.3s ease;
+		z-index: 2;
+	}
+
+	.btn-viviendas:hover {
+		background: rgb(0, 0, 0);
+		transform: translateY(-50%) scale(1.05);
+		box-shadow: 0 5px 15px rgba(130, 148, 166, 0.5);
+	}
+	</style>
+
+</head>
+
+<body style="
+	background:
+	linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+	url('/static/img/banner1.jpeg');
+	background-size: cover;
+	background-position: center;
+	background-attachment: fixed;
+" class="d-flex align-items-center py-4">
+
+	<!-- 🔥 BOTÓN NUEVO -->
+	<a href="/viviendasLog" class="btn-viviendas">
+		 Ver viviendas
+	</a>
+
+	<!-- Tema oscuro/claro -->
+	<svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+		<symbol id="check2" viewBox="0 0 16 16">
+			<path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+		</symbol>
+	</svg>
+
+	<div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3">
+		<button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown">
+			Tema
+		</button>
+		<ul class="dropdown-menu dropdown-menu-end shadow">
+			<li><button class="dropdown-item" data-bs-theme-value="light">Claro</button></li>
+			<li><button class="dropdown-item" data-bs-theme-value="dark">Oscuro</button></li>
+			<li><button class="dropdown-item active" data-bs-theme-value="auto">Auto</button></li>
+		</ul>
+	</div>
+
+	<!-- LOGIN -->
+	<main class="form-signin w-100 m-auto">
+		<form action="/login" method="POST">
+
+			<center>
+				<img class="mb-4" src="{{ url_for('static', filename='img/banner1.jpeg') }}" width="180">
+			</center>
+
+			<h1 class="h3 mb-3 fw-normal text-white text-center">Inicia sesión</h1>
+
+			<div class="form-floating"> 
+				<input type="text" class="form-control" name="nombre_usuario" required id="floatingInput">
+				<label>Usuario</label> 
+			</div><br>
+
+			<div class="form-floating"> 
+				<input type="password" class="form-control" name="contrasena" required id="floatingPassword">
+				<label>Contraseña</label> 
+			</div>
+
+			<div class="form-check text-start my-3 text-white"> 
+				<input class="form-check-input" type="checkbox"> 
+				<label class="form-check-label">Recordar</label> 
+			</div>
+
+			{% if message %}
+			<div class="alert alert-danger alert-dismissible fade show">
+				<strong>Error</strong> {{ message }}
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+			{% endif %}
+
+			<p class="text-center">
+				<a href="/registro" class="text-info">Regístrate aquí</a>
+			</p>
+
+			<button class="btn btn-primary w-100 py-2">Iniciar Sesión</button>
+
+			<center>
+				<p class="mt-4 text-light">&copy; HomeSecurity 2025</p>
+			</center>
+
+		</form>
+	</main>
+
+</body>
+</html>

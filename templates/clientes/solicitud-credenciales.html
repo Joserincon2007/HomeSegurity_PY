@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Credenciales | InmoApp</title>
+    
+    <!-- Iconos de Bootstrap para mantener consistencia con el catálogo -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Paleta suave y moderna acoplada al nuevo catálogo */
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --primary-blue: #0ea5e9;
+            --primary-hover: #2563eb;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success-green: #10b981;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+            padding: 20px 0;
+            box-sizing: border-box;
+        }
+
+        /* ======================
+           BOTÓN VOLVER AL HOME 
+        ====================== */
+        .btn-volver-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            transition: all 0.2s ease;
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            width: fit-content;
+        }
+
+        .btn-volver-home:hover {
+            color: var(--primary-hover);
+            border-color: #cbd5e1;
+            transform: translateX(-3px);
+            background: #f1f5f9;
+        }
+
+        /* ======================
+           CONTENEDOR ORGÁNICO
+        ====================== */
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            color: #0f172a;
+            text-align: center;
+            margin: 0 0 8px 0;
+            font-weight: 700;
+            font-size: 1.75rem;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        /* ======================
+           INPUTS REDONDEADOS
+        ====================== */
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            margin: 8px 0 16px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            color: #0f172a;
+            background-color: #ffffff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.12);
+        }
+
+        h3 {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin: 15px 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+        }
+
+        /* ======================
+           TARJETAS DE CARGO
+        ====================== */
+        .cards {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            padding: 14px 5px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.25s ease;
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.9rem;
+            background: #ffffff;
+        }
+
+        .card:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+
+        .card.selected {
+            border-color: transparent;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-hover));
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.25);
+        }
+
+        /* ======================
+           BOTONES DE ACCIÓN
+        ====================== */
+        button[type="submit"], .btn-modal-accept {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-hover));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        /* ======================
+           MODAL RE-ESTILIZADO
+        ====================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-box {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            position: relative;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close-x {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-x:hover { color: #334155; }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            background: #d1fae5;
+            color: var(--success-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 auto 24px;
+        }
+        
+        .btn-modal-accept {
+            background: var(--success-green) !important;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+        }
+        
+        .btn-modal-accept:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35) !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+     <a href="{{ url_for('auth.ver_vivienda') }}" class="btn-volver-home">
+         <i class="bi bi-arrow-left"></i> Volver al Catálogo
+     </a>
+    <h2>Solicitud de Acceso</h2>
+    <p class="subtitle">Complete los datos para obtener sus credenciales</p>
+    
+    <form id="formSolicitud" method="POST" action="{{ url_for('auth.solicitar_admin') }}">
+        <input type="text" name="nombre" placeholder="Nombre" required>
+        <input type="text" name="apellido" placeholder="Apellido" required>
+        <input type="email" name="correo" placeholder="Correo electrónico" required>
+
+        <h3>Seleccione su cargo</h3>
+        <div class="cards">
+            <div class="card" onclick="selectCargo(this,'PERITO')">Perito</div>
+            <div class="card" onclick="selectCargo(this,'AGENTE')">Agente</div>
+            <div class="card" onclick="selectCargo(this,'ADMIN')">Admin</div>
+        </div>
+
+        <input type="hidden" name="cargo" id="cargo" required>
+        <button type="submit">Enviar Solicitud</button>
+    </form>
+</div>
+
+<div id="modalSuccess" class="modal-overlay">
+    <div class="modal-box">
+        <span class="close-x" onclick="cerrarModal()">&times;</span>
+        <div class="modal-icon"><i class="bi bi-check2"></i></div>
+        <h2 style="margin-bottom: 12px; font-size: 1.5rem;">¡Enviado con éxito!</h2>
+        <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; margin-bottom: 24px;">
+            Tu solicitud ha sido registrada. El administrador revisará tus datos y recibirás una notificación por correo.
+        </p>
+        <button class="btn-modal-accept" onclick="cerrarModal()">Aceptar</button>
+    </div>
+</div>
+
+<script>
+    function selectCargo(element, cargo) {
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('cargo').value = cargo;
+    }
+
+    function mostrarModal() {
+        const modal = document.getElementById('modalSuccess');
+        if(modal) modal.style.display = 'flex';
+    }
+
+    function cerrarModal() {
+        const modal = document.getElementById('modalSuccess');
+        if(modal) modal.style.display = 'none';
+    }
+
+    const rawMessages = '{{ get_flashed_messages() | join(",") }}';
+
+    if (rawMessages.includes('success_modal')) {
+        window.addEventListener('load', () => {
+            mostrarModal();
+        });
+    }
+
+    window.onclick = function(event) {
+        let modal = document.getElementById('modalSuccess');
+        if (event.target == modal) {
+            cerrarModal();
+        }
+    }
+</script>
+
+</body>
+</html>

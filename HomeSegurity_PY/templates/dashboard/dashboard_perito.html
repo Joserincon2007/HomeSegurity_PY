@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Perito | homeSegurity</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --midnight: #0a192f;
+            --navy: #112240;
+            --soft-blue: #233554;
+            --cyan: #64ffda;
+            --silver: #ccd6f6;
+        }
+
+        body {
+            background-color: var(--midnight);
+            color: var(--silver);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* --- NUEVO MENÚ DE NAVEGACIÓN --- */
+        .navbar-custom {
+            background: var(--navy);
+            border-bottom: 2px solid var(--cyan);
+            padding: 1rem;
+        }
+        .nav-link {
+            color: var(--silver) !important;
+            margin-right: 15px;
+            transition: 0.3s;
+        }
+        .nav-link:hover { color: var(--cyan) !important; }
+        .nav-link.active { border-bottom: 2px solid var(--cyan); color: var(--cyan) !important; }
+
+        .card-admin {
+            background: var(--navy);
+            border: 1px solid var(--soft-blue);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 2rem;
+            margin-top: 30px;
+        }
+
+        h2 { color: var(--cyan); letter-spacing: 1px; }
+        .table { color: var(--silver); border-color: var(--soft-blue); }
+        .table thead { background: var(--soft-blue); color: var(--cyan); }
+
+        .btn-schedule {
+            background: transparent;
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .btn-schedule:hover {
+            background: var(--cyan);
+            color: var(--midnight);
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.4);
+        }
+
+        .modal-content {
+            background: var(--navy);
+            border: 1px solid var(--cyan);
+            color: var(--silver);
+        }
+
+        .form-control {
+            background: #1d2d50;
+            border: 1px solid var(--soft-blue);
+            color: white;
+        }
+        
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+        <a class="navbar-brand text-info fw-bold" href="#">HOME SEGURITY</a>
+        <div class="collapse navbar-collapse">
+        <div class="nav-end">
+        {% if session.usuario %}
+            <span class="text-light me-2">
+              Bienvenido Prito  👤 {{ session.usuario }} {{ session.apellido }}
+            </span>
+        {% endif %}
+    </div>
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('avaluos.dashboard_perito') }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('avaluos.listar_perito') }}">Listar Avalúos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.vista_cambiar_password') }}"> Cambiar contraseña</a>
+                </li>
+            </ul>
+            <div class="d-flex">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card-admin">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-user-shield"></i> Dashboard Perito</h2>
+            <span class="text-muted">Gestión de Citas Técnicas</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Solicitante</th>
+                        <th>Ubicación</th>
+                        <th>Valor Calc.</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# Este bloque ahora funcionará si usas el .query(Avaluo, Vivienda) en Python #}
+                    {% for avaluo, vivienda in avaluos %}
+                    <tr>
+                        <td>
+                            <strong>{{ avaluo.solicitante }}</strong><br>
+                            <small class="text-info">{{ avaluo.correo }}</small>
+                        </td>
+                        <td>{{ vivienda.direccion }}<br><small>{{ avaluo.localidad }}</small></td>
+                        <td><span class="text-black">$ {{ "{:,.0f}".format(avaluo.valor_total) }}</span></td>
+                        <td>
+                            {% if not avaluo.id_perito %}
+                                <span class="status-badge bg-warning text-dark">Pendiente</span>
+                            {% else %}
+                                <span class="status-badge bg-success text-white">Programado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-schedule" data-bs-toggle="modal" data-bs-target="#modal{{ avaluo.id_avaluo }}">
+                                <i class="fas fa-calendar-plus"></i> Agendar
+                            </button>
+                        </td>
+                    </tr>
+
+                    <div class="modal fade" id="modal{{ avaluo.id_avaluo }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <form action="{{ url_for('avaluos.confirmar_cita', id_avaluo=avaluo.id_avaluo) }}" method="POST">
+                                <div class="modal-content">
+                                    <div class="modal-header border-bottom-0">
+                                        <h5 class="modal-title">Programar Visita: {{ vivienda.direccion }}</h5>
+                                    </div>
+<div class="modal-body">
+    <div class="mb-3">
+        <label class="form-label">Fecha y Hora de Cita</label>
+        <input type="datetime-local" name="fecha_cita" id="fecha_cita" class="form-control" required>
+        <div id="error-msg" class="text-danger small mt-1" style="display:none;">
+            La cita debe ser hoy o en el futuro, entre las 6:00 AM y las 8:00 AM.
+        </div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">ID del Perito Responsable</label>
+        <input type="number" name="id_perito" class="form-control" required>
+    </div>
+</div>
+                                    </div>
+                                    <div class="modal-footer border-top-0">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                        <button type="submit" class="btn btn-schedule">Confirmar y Enviar PDF</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const inputFecha = document.getElementById('fecha_cita');
+    const errorMsg = document.getElementById('error-msg');
+
+    // 1. Restringir que no se elijan días pasados (mínimo hoy)
+    const ahora = new Date();
+    // Formato ISO local: YYYY-MM-DDTHH:mm
+    const hoy = ahora.toISOString().slice(0, 16);
+    inputFecha.min = hoy;
+
+    // 2. Validación de franja horaria (6 AM a 8 AM)
+    inputFecha.addEventListener('change', function() {
+        const fechaSeleccionada = new Date(this.value);
+        const hora = fechaSeleccionada.getHours();
+        
+        // Verificamos si está fuera del rango 6:00 a 8:59
+        // Si quieres que sea estrictamente HASTA las 8:00 (no 8:30), usa: (hora < 6 || hora >= 8)
+        if (hora < 6 || hora >= 8) {
+            errorMsg.style.display = 'block';
+            this.value = ''; // Limpia el input si es inválido
+            this.classList.add('is-invalid');
+        } else {
+            errorMsg.style.display = 'none';
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

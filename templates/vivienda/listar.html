@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>homeSegurity - Listado de Viviendas</title>
+
+    <style>
+        /* ===== VARIABLES DE COLOR FORMALES ===== */
+        :root {
+            --bg-deep: #0f172a;        /* Azul Slate oscuro */
+            --bg-card: #1e293b;        /* Azul Slate medio */
+            --accent-blue: #3b82f6;    /* Azul brillante */
+            --header-blue: #1e3a8a;    /* Azul Navy formal */
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* ===== NAVBAR PROFESIONAL ===== */
+        .navbar {
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--accent-blue);
+        }
+
+        .menu a {
+            color: var(--text-dim);
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .menu a:hover, .menu a.active {
+            color: white;
+        }
+
+        /* ===== CONTENEDOR ===== */
+        .container {
+            padding: 3rem;
+            max-width: 15000px;
+            margin: 0 auto;
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .btn-new {
+            background: var(--accent-blue);
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+            transition: 0.3s ease;
+        }
+
+        .btn-new:hover {
+            transform: translateY(-2px);
+            background: #2563eb;
+        }
+
+        /* ===== TABLA ESTILO DASHBOARD ===== */
+        .table-wrapper {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(0,0,0,0.2);
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* ===== BADGES DE ESTADO ===== */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(255,255,255,0.1);
+        }
+        .status-activo { color: var(--success); border: 1px solid var(--success); }
+        .status-vendido { color: var(--text-dim); border: 1px solid var(--text-dim); }
+
+        /* ===== BOTONES DE ACCIÓN ===== */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-edit { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .btn-edit:hover { background: var(--warning); color: white; }
+
+        .btn-delete { background: rgba(220, 38, 38, 0.1); color: var(--danger); }
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        .img-vivienda {
+            width: 80px; height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="logo">homeSegurity</div>
+    <div class="menu">
+        <a href="/dashboard">Dashboard</a>
+        <a href="{{ url_for('dashboard_citas.dashboard') }}">Citas</a>
+        <a href="{{ url_for('agente.vivienda') }}" class="active">Viviendas</a>
+        <a href="/logout" style="color: var(--danger)">Salir</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header-flex">
+        <h2>Listado de Propiedades</h2>
+        <a class="btn-new" href="{{ url_for('agente.crear_vivienda') }}">
+            + Registrar Propiedad
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imagen</th>
+                    <th>Ubicación</th>
+                    <th>Detalles</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in viviendas %}
+                <tr>
+                    <td style="font-weight: bold; color: var(--accent-blue)">#{{ v.id_vivienda }}</td>
+                    <td>
+                        {% if v.foto %}
+                        <img class="img-vivienda" src="{{ url_for('static', filename='uploads/' + v.foto) }}">
+                        {% else %}
+                        <div class="img-vivienda" style="background: #334155; display: flex; align-items: center; justify-content: center; font-size: 10px">N/A</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="font-weight: 600">{{ v.direccion }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-dim)">{{ v.localidad }}, {{ v.ciudad }}</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem">
+                            🛏️ {{ v.habitaciones }} | 🚿 {{ v.banos }} | 🚗 {{ v.parqueaderos }}<br>
+                            📏 {{ v.area_m2 }} m² | 🏗️ {{ v.antiguedad }} años
+                        </div>
+                    </td>
+                    <td style="font-weight: 700; color: #fff">
+                        $ {{ "{:,.0f}".format(v.precio|int) }}
+                    </td>
+                    <td>
+                        <span class="status-badge {{ 'status-activo' if v.estado_publicacion == 'ACTIVO' else 'status-vendido' }}">
+                            {{ v.estado_publicacion }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <a class="btn-icon btn-edit" title="Editar" href="{{ url_for('agente.editar_vivienda', id=v.id_vivienda) }}">✏️</a>
+                            <a class="btn-icon btn-delete" title="Eliminar" href="{{ url_for('agente.eliminar_vivienda', id=v.id_vivienda) }}" onclick="return confirmarEliminar()">🗑️</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function confirmarEliminar(){
+        return confirm("¿Está seguro de eliminar esta propiedad? Esta acción no se puede deshacer.");
+    }
+</script>
+
+</body>
+</html>

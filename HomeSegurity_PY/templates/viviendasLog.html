@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeSecurity | Catálogo de Viviendas</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        .banner {
+            width: 100%; height: 320px;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)),
+                        url("{{ url_for('static', filename='img/banner1.jpeg') }}");
+            background-size: cover; background-position: center;
+            display: flex; justify-content: center; align-items: center;
+            text-align: center; color: white;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .filtros-container { margin-top: -50px; position: relative; z-index: 10; }
+        .filtros-card {
+            background: #ffffff; padding: 30px; border-radius: 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            border: none;
+        }
+
+        .vivienda-card {
+            border: none; border-radius: 14px; overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: white;
+        }
+        .vivienda-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .navbar { box-shadow: 0 3px 12px rgba(0,0,0,0.15); }
+        .footer { margin-top: 80px; padding: 60px 0 30px; background: #212529; color: white; }
+        .copy { opacity: 0.6; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 40px; }
+        
+        .price-text { color: #0d6efd; font-weight: 800; font-size: 1.25rem; }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#"><i class="bi bi-shield-lock"></i> HomeSecurity</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="/quienes-somos">Quiénes Somos</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/viviendasLog">Ver Apartamentos</a></li>
+            </ul>
+            <div class="d-flex align-items-center text-light">
+                {% if session.usuario %}
+                    <span class="me-3 small text-uppercase">👤 {{ session.usuario }}</span>
+                    <a href="/logout" class="btn btn-outline-light btn-sm rounded-pill">Salir</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm rounded-pill px-3">Iniciar Sesión</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<section class="banner">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Encuentra tu hogar ideal</h1>
+        <p class="lead opacity-75">Seguridad y confianza para tu próximo paso</p>
+    </div>
+</section>
+
+<section class="filtros-container container">
+    <div class="filtros-card">
+        <form action="{{ url_for('viviendas') }}" method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Localidad</label>
+                <select name="localidad" class="form-select border-0 bg-light">
+                    <option value="">Todas las localidades</option>
+                    <option value="Usaquén">Usaquén</option>
+                    <option value="Suba">Suba</option>
+                    <option value="Kennedy">Kennedy</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Precio Máximo</label>
+                <input type="number" name="precio_max" class="form-control border-0 bg-light" placeholder="Ej: 500000000">
+            </div>
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary w-100 py-2">🔍 Filtrar</button>
+                <a href="{{ url_for('viviendas') }}" class="btn btn-outline-secondary py-2"><i class="bi bi-arrow-clockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<main class="container my-5 pt-4">
+    <div class="row g-4">
+        {% if viviendas %}
+            {% for v in viviendas %}
+            <div class="col-md-4">
+                <div class="card vivienda-card shadow-sm h-100">
+                    <img src="{{ url_for('static', filename='uploads/' ~ v.foto) if v.foto else url_for('static', filename='img/banner1.jpeg') }}" 
+                         class="card-img-top" style="height:230px; object-fit:cover;">
+                    <div class="card-body p-4">
+                        <h6 class="text-primary fw-bold text-uppercase small">{{ v.tipo_inmueble }}</h6>
+                        <h5 class="fw-bold mb-1">{{ v.localidad }}</h5>
+                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt"></i> {{ v.direccion }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <span class="price-text">$ {{ "{:,.0f}".format(v.precio|float) }}</span>
+                            <button class="btn btn-dark btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modal{{ v.id_vivienda }}">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modal{{ v.id_vivienda }}" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0">
+                        <div class="modal-header bg-dark text-white border-0">
+                            <h5 class="modal-title fw-bold">Especificaciones</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <img class="img-fluid rounded-4 shadow-sm" src="{{ url_for('static', filename='uploads/' ~ v.foto) if v.foto else url_for('static', filename='img/banner1.jpeg') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <h3 class="fw-bold">{{ v.localidad }}</h3>
+                                    <p class="text-muted">{{ v.descripcion }}</p>
+                                    <h4 class="text-primary fw-bold mb-4">$ {{ "{:,.0f}".format(v.precio|float) }}</h4>
+
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('auth.login') }}" class="btn btn-warning fw-bold py-2 rounded-pill shadow-sm">
+                                            <i class="bi bi-calendar-check"></i> Agendar Cita Técnica
+                                        </a>
+                                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark py-2 rounded-pill">
+                                            <i class="bi bi-bar-chart-line"></i> Solicitar Avalúo
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <h4 class="text-muted">No hay viviendas disponibles.</h4>
+                <a href="{{ url_for('viviendas') }}" class="btn btn-primary mt-3">Ver todo</a>
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+<footer class="footer bg-dark text-light">
+    <div class="container py-5">
+
+        <div class="row">
+
+            <div class="col-md-4">
+                <h5>HomeSecurity</h5>
+                <p>Inmobiliaria especializada en viviendas seguras y confiables.</p>
+                <p>Asesoría en compra, venta y avalúos profesionales.</p>
+            </div>
+
+            <div class="col-md-4">
+                <h5>Ubicación</h5>
+                <p>Bogotá D.C, Colombia</p>
+                <p>Av. Calle 26 # 45-67</p>
+                <p>Zona Empresarial</p>
+            </div>
+
+            <div class="col-md-4">
+                <h5>Contacto</h5>
+                <p>Tel: +57 320 456 7890</p>
+                <p>Email: contacto@homesecurity.com</p>
+                <p>Horario: Lunes a Viernes 8:00 AM - 6:00 PM</p>
+            </div>
+        </div>
+
+    </div>
+
+    <p class="copy text-center">© 2026 HomeSecurity - Todos los derechos reservados</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

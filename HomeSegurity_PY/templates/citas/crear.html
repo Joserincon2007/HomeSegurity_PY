@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+:root {
+    --azul-oscuro: #1a365d;
+    --azul-medio: #2b6cb0;
+    --azul-fondo: #f0f4f8;
+    --azul-borde: #cbd5e0;
+    --blanco: #ffffff;
+    --error-red: #e53e3e;
+    --success-green: #38a169;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #e2e8f0 0%, #ebf4ff 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.form-container {
+    background: var(--blanco);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+}
+
+h2 {
+    color: var(--azul-oscuro);
+    margin-top: 0;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+h3 {
+    color: var(--azul-medio);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 30px;
+    background: var(--azul-fondo);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.mb-3 {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--azul-oscuro);
+    font-size: 0.9rem;
+}
+
+input {
+    padding: 12px;
+    border: 1px solid var(--azul-borde);
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #2d3748;
+    outline: none;
+    transition: all 0.2s ease;
+    background-color: #fafafa;
+}
+
+input:focus {
+    border-color: var(--azul-medio);
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+    background-color: #fff;
+}
+
+/* Clases de validación dinámicas */
+.is-invalid {
+    border-color: var(--error-red) !important;
+    background-color: #fff5f5;
+}
+
+.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2) !important;
+}
+
+.is-valid {
+    border-color: var(--success-green) !important;
+}
+
+.text-danger {
+    color: var(--error-red);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+button {
+    background-color: var(--azul-medio);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    margin-top: 10px;
+    width: 100%;
+}
+
+button:hover {
+    background-color: var(--azul-oscuro);
+    box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+</style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Agendar cita</h2>
+        <h3>{{ vivienda.ciudad }} - {{ vivienda.direccion }}</h3>
+
+        <form method="POST" action="{{ url_for('citas.crear_cita', id_vivienda=vivienda.id_vivienda) }}">
+            
+<div class="mb-3">
+    <label for="fecha" class="form-label">Fecha de la visita</label>
+    <input type="date" id="fecha" name="fecha" class="form-control" required>
+</div>
+
+<div class="mb-3">
+    <label for="hora" class="form-label">Hora preferida (6:00 AM - 8:00 AM)</label>
+    <input type="time" id="hora" name="hora" class="form-control" required>
+    <div id="error-hora" class="text-danger small mt-1" style="display:none;">
+        La hora debe estar entre las 06:00 y las 08:00.
+    </div>
+</div>
+
+            <button type="submit">Confirmar Agendamiento</button>
+            
+        </form>
+    </div>
+
+    <script>
+    // 1. Validación de Fecha (No permitir días pasados)
+    const inputFecha = document.getElementById('fecha');
+    const hoy = new Date().toISOString().split('T')[0];
+    inputFecha.setAttribute('min', hoy);
+
+    // 2. Validación de Hora (Rango 06:00 a 08:00)
+    const inputHora = document.getElementById('hora');
+    const errorHora = document.getElementById('error-hora');
+
+    inputHora.addEventListener('change', function() {
+        const valorHora = this.value; // Formato "HH:mm"
+        
+        if (valorHora) {
+            const [horas, minutos] = valorHora.split(':').map(Number);
+            
+            // Validamos que esté entre las 6:00 y las 8:00 inclusive
+            // Si quieres que a las 8:01 ya sea inválido:
+            const esValido = (horas > 6 && horas < 8) || 
+                             (horas === 6 && minutos >= 0) || 
+                             (horas === 8 && minutos === 0);
+
+            if (!esValido) {
+                errorHora.style.display = 'block';
+                this.value = ''; // Limpia el campo
+                this.classList.add('is-invalid');
+            } else {
+                errorHora.style.display = 'none';
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

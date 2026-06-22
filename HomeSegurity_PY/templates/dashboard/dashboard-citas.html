@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Citas | Administración</title>
+
+<style>
+    :root {
+        --bg-main: #0f172a;        /* Azul noche profundo */
+        --bg-card: #1e293b;        /* Azul pizarra */
+        --azul-accent: #3b82f6;    /* Azul brillante */
+        --azul-hover: #2563eb;
+        --texto-soft: #94a3b8;
+        --borde: #334155;
+        
+    }
+
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background-color: var(--bg-main);
+        color: #f1f5f9;
+        margin: 0;
+        padding: 40px;
+    }
+
+    h1 {
+        text-align: left;
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+        border-left: 5px solid var(--azul-accent);
+        padding-left: 15px;
+    }
+
+    /* Grid del Dashboard */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+
+    .card {
+        background: var(--bg-card);
+        padding: 25px;
+        border-radius: 16px;
+        border: 1px solid var(--borde);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .card:hover {
+        border-color: var(--azul-accent);
+        transform: translateY(-2px);
+    }
+
+    h3 {
+        margin: 0 0 15px 0;
+        color: var(--azul-accent);
+        font-size: 1.2rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+    }
+
+    .info-label {
+        color: var(--texto-soft);
+        font-weight: 500;
+    }
+
+    /* Formulario */
+    label {
+        display: block;
+        margin-top: 15px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--texto-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    select, textarea {
+        width: 100%;
+        padding: 12px;
+        margin-top: 6px;
+        border-radius: 8px;
+        background: #0f172a;
+        border: 1px solid var(--borde);
+        color: white;
+        font-size: 0.9rem;
+        box-sizing: border-box; /* Evita que el padding desborde el ancho */
+    }
+
+    textarea {
+        height: 80px;
+        resize: none;
+    }
+
+    button {
+        width: 100%;
+        background: var(--azul-accent);
+        color: white;
+        border: none;
+        padding: 12px;
+        margin-top: 20px;
+        cursor: pointer;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: background 0.3s;
+    }
+
+    button:hover {
+        background: var(--azul-hover);
+    }
+
+    /* Tags de estado */
+    .badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        background: #334155;
+    }
+
+    /* Contenedor Principal de la Navbar */
+    .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(30, 41, 59, 0.8); /* Efecto semi-transparente */
+        backdrop-filter: blur(10px);
+        padding: 0.8rem 2rem;
+        border-bottom: 1px solid #334155;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        color: var(--blanco);
+    }
+
+    /* Estilo del Logo / Título */
+    .logo {
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Información del Administrador */
+    .nav-end {
+        flex-grow: 1;
+        margin-left: 2rem;
+        font-size: 0.9rem;
+        color: var(--texto-soft);
+    }
+
+    .admin-name {
+        color: var(--blanco);
+        font-weight: 600;
+        margin-left: 5px;
+    }
+
+    /* Menú de Navegación */
+    .menu {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .menu a {
+        text-decoration: none;
+        color: var(--texto-soft);
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.3s, border-bottom 0.3s;
+        padding: 5px 0;
+    }
+
+    .menu a:hover {
+        color: var(--azul-accent);
+    }
+
+    /* Botón de Salir */
+    .btn-logout {
+        border: 1px solid #ef4444;
+        color: #ef4444 !important;
+        padding: 6px 16px !important;
+        border-radius: 6px;
+        transition: all 0.3s ease !important;
+    }
+
+    .btn-logout:hover {
+        background: #ef4444;
+        color: white !important;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .navbar {
+            flex-direction: column;
+            gap: 15px;
+            padding: 1rem;
+        }
+        .nav-end {
+            margin-left: 0;
+            text-align: center;
+        }
+    }
+
+</style>
+</head>
+
+<body>
+
+    <div class="navbar">
+    <div class="logo">Panel Administrativo</div>
+        <div class="nav-end">
+        {% if session.usuario %}
+            <span class="text-light me-2">
+              Bienvenido Agente  👤 {{ session.usuario }} {{ session.apellido }}
+            </span>
+        {% endif %}
+    </div>
+
+    <div class="menu">
+        <a href="#">Inicio</a>
+        <a href="{{ url_for('agente.vivienda') }}">Viviendas</a>
+        <a href="{{ url_for('dashboard_citas.dashboard') }}">Citas</a>
+         <a class="nav-link" href="{{ url_for('admin.vista_cambiar_password') }}"> Cambiar contraseña</a>
+        <a href="/logout" class="btn btn-outline-light">Salir</a>
+    </div>
+</div>
+
+    <h1>📅 Dashboard de Gestión de Citas</h1>
+
+    <div class="dashboard-grid">
+        {% for c in citas %}
+        <div class="card">
+            <h3>{{ c.nombre }}</h3>
+            
+            <div class="info-row">
+                <span class="info-label">Fecha:</span>
+                <span>{{ c.fecha }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Hora:</span>
+                <span>{{ c.hora }}</span>
+            </div>
+
+            <form method="POST" action="{{ url_for('dashboard_citas.actualizar_cita', id=c.id) }}">
+                <input type="hidden" name="correo" value="{{ c.correo }}">
+
+                <label>Estado del proceso</label>
+                <select name="estado" onchange="actualizarDescripcion(this)">
+                    <option value="Pendiente" {{ 'selected' if c.estado=='Pendiente' }}>Pendiente</option>
+                    <option value="Aprobada" {{ 'selected' if c.estado=='Aprobada' }}>Aprobada</option>
+                    <option value="Cancelada" {{ 'selected' if c.estado=='Cancelada' }}>Cancelada</option>
+                    <option value="Finalizada" {{ 'selected' if c.estado=='Finalizada' }}>Finalizada</option>
+                </select>
+
+                <label>Recomendaciones / Notas</label>
+                <textarea name="recomendaciones" placeholder="Escriba aquí las observaciones...">{{ c.recomendaciones or '' }}</textarea>
+
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        /**
+         * Función para automatizar descripciones basadas en el estado
+         */
+        function actualizarDescripcion(selectElement) {
+            // Buscamos el textarea que está dentro del mismo formulario que el select
+            const form = selectElement.closest('form');
+            const textarea = form.querySelector('textarea[name="recomendaciones"]');
+            const estado = selectElement.value;
+
+            const sugerencias = {
+                'Pendiente': 'Cita en espera de revisión de documentos.',
+                'Aprobada': 'La cita ha sido confirmada. Por favor, asistir puntualmente con identificación.',
+                'Cancelada': 'Cita cancelada por solicitud del usuario o falta de requisitos.',
+                'Finalizada': 'Proceso concluido exitosamente. Se enviará el reporte por correo.'
+            };
+
+            // Solo actualiza si el área de texto está vacía o tiene una de las sugerencias previas
+            // para no borrar notas manuales importantes.
+            if (sugerencias[estado]) {
+                textarea.value = sugerencias[estado];
+            }
+        }
+    </script>
+
+</body>
+</html>

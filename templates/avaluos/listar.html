@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Avalúos | homeSegurity</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --azul-fondo: #021024;
+            --azul-accent: #0d6efd;
+            --texto-oscuro: #1a1a1a; /* Negro suave para lectura */
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--azul-fondo) 0%, #0c356a 100%);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .dashboard-container {
+            background: rgba(255, 255, 255, 0.95); /* Fondo blanco para que resalte el texto negro */
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            max-width: 1100px;
+            margin: auto;
+            color: var(--texto-oscuro);
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: var(--azul-fondo);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .btn-volver-home {
+            background: var(--azul-fondo);
+            color: white;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .btn-volver-home:hover {
+            background: #052659;
+            color: white;
+        }
+
+        /* Estilos de Tabla - Texto Negro */
+        .table {
+            color: var(--texto-oscuro) !important;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            color: var(--azul-fondo);
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .price-tag {
+            color: #198754; /* Verde éxito para dinero */
+            font-weight: 800;
+        }
+
+        .btn-action {
+            background-color: var(--azul-accent);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        /* Estilos del Modal */
+        .modal-content {
+            color: var(--texto-oscuro);
+            border-radius: 15px;
+        }
+        
+        .modal-header {
+            background-color: var(--azul-fondo);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .detail-item {
+            border-bottom: 1px solid #f0f0f0;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .detail-label {
+            font-weight: 700;
+            color: #555;
+        }
+
+        /* Contenedor principal a la derecha */
+.nav-end {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espacio entre el nombre y el botón */
+    margin-left: auto; /* Esto empuja todo a la derecha si usas Flexbox en la navbar */
+}
+
+/* Estilo para el nombre del usuario */
+.nav-end .text-light {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.9) !important;
+    background: rgba(255, 255, 255, 0.1); /* Fondo sutil detrás del nombre */
+    padding: 5px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Botón de Salir con estilo formal */
+.nav-end .btn-outline-light {
+    border-radius: 20px;
+    font-size: 0.85rem;
+    padding: 5px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.nav-end .btn-outline-light:hover {
+    background-color: #dc3545; /* Rojo discreto al pasar el mouse para indicar cierre */
+    border-color: #dc3545;
+    color: rgb(0, 0, 0);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+    </style>
+</head>
+<body>
+
+<div class="container dashboard-container">
+    <div class="header-flex">
+        <h2><i class="bi bi-bar-chart-fill"></i> Mis Avalúos</h2>
+        <a href="{{ url_for('auth.ver_vivienda') }}" class="btn-volver-home">
+            <i class="bi bi-house-door-fill"></i> Volver al Catálogo
+        </a>
+                   <div class="nav-end">
+        {% if session.usuario %}
+            <span class="text-light me-2">
+                👤 {{ session.usuario }} {{ session.apellido }}
+            </span>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light">Salir</a>
+        {% endif %}
+    </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Dirección</th>
+                    <th>Localidad</th>
+                    <th>Valor Total</th>
+                    <th>Fecha</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for avaluo, vivienda in avaluos %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ vivienda.direccion }}</div>
+                        <small class="text-muted">Estrato {{ avaluo.estrato }}</small>
+                    </td>
+                    <td>{{ avaluo.localidad }}</td>
+                    <td><span class="price-tag">$ {{ "{:,.0f}".format(avaluo.valor_total) }}</span></td>
+                    <td>{{ avaluo.fecha.strftime('%d/%m/%Y') }}</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-action" data-bs-toggle="modal" data-bs-target="#modal{{ avaluo.id_avaluo }}">
+                            <i class="bi bi-eye"></i> Detalles
+                        </button>
+                    </td>
+                </tr>
+
+                <div class="modal fade" id="modal{{ avaluo.id_avaluo }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="bi bi-info-circle"></i> Detalle del Avalúo</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="detail-item">
+                                    <span class="detail-label">Solicitante:</span>
+                                    <span>{{ avaluo.solicitante }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Área:</span>
+                                    <span>{{ avaluo.area_m2 }} m²</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Precio por m²:</span>
+                                    <span>$ {{ "{:,.0f}".format(avaluo.precio_m2) }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Antigüedad:</span>
+                                    <span>{{ avaluo.antiguedad }} años</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Parqueaderos:</span>
+                                    <span>{{ avaluo.parqueaderos }}</span>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="detail-label d-block mb-2">Descripción del sector:</span>
+                                    <p class="small p-3 bg-light rounded">{{ avaluo.descripcion }}</p>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">No se han encontrado registros.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
