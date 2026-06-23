@@ -178,25 +178,35 @@ def solicitar_admin_form():
 
 @auth.route('/solicitar_admin', methods=['POST'])
 def solicitar_admin():
+    import sys  # Para capturar el error en journalctl
 
-    nombre = request.form['nombre']
-    apellido = request.form['apellido']
-    correo = request.form['correo']
-    cargo = request.form['cargo']
+    try:
+        # 1. Capturamos los datos del formulario HTML
+        # OJO: Asegúrate de que los 'name' en tu archivo HTML sean exactamente estos
+        nombre = request.form.get('nombre')
+        apellido = request.form.get('apellido')
+        correo = request.form.get('correo')
+        cargo = request.form.get('cargo')
 
-    cur = mysql.connection.cursor()
+        print(f"--> [AUTH] Intentando guardar solicitud: {nombre} {apellido} ({correo})", file=sys.stderr)
 
-    cur.execute("""
-        INSERT INTO solicitudes_admin
-        (nombre, apellido, correo, cargo, estado)
-        VALUES (%s,%s,%s,%s,'PENDIENTE')
-    """,(nombre,apellido,correo,cargo))
+        # 2. Conexión e inserción en la base de datos
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            INSERT INTO solicitudes_admin
+            (nombre, apellido, correo, cargo, estado)
+            VALUES (%s, %s, %s, %s, 'PENDIENTE')
+        """, (nombre, apellido, correo, cargo))
 
-    mysql.connection.commit()
-    cur.close()
+        mysql.connection.commit()
+        cur.close()
 
-    flash('success_modal') 
+        print("--> [AUTH] ¡Solicitud guardada con éxito en la Base de Datos!", file=sys.stderr)
+        flash('success_modal')
+
+    except Exception as e:
+        # Si algo falla (campo null, error de sintaxis, etc.), lo sabremos aquí de inmediato
+        print(f"❌ [AUTH] Error al insertar la solicitud en la BD: {str(e)}", file=sys.stderr)
+        flash('error_modal') # O el manejo que prefieras
+
     return redirect(url_for('auth.solicitar_admin_form'))
-
-
-
