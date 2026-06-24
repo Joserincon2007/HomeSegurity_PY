@@ -1,13 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from conexion import get_connection
 from extensions import mysql
-<<<<<<< HEAD
-from werkzeug.utils import secure_filename
-=======
 from flask import request, render_template
 from werkzeug.utils import secure_filename
 from conexion import get_connection
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
 import os
 
 UPLOAD_FOLDER = "static/uploads"
@@ -105,10 +101,6 @@ def crear_vivienda():
 # CATÁLOGO PÚBLICO
 # ==============================
 from flask import request
-<<<<<<< HEAD
-
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
 @agente.route("/catalogo")
 def catalogo_publico():
     # 1. Capturar los criterios de búsqueda desde la URL
@@ -121,11 +113,7 @@ def catalogo_publico():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-<<<<<<< HEAD
-    # 2. Base de la consulta
-=======
     # 2. Base de la consulta usando la estructura de tu base de datos
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     query = "SELECT * FROM vivienda WHERE estado_publicacion='ACTIVO'"
     params = []
 
@@ -133,11 +121,7 @@ def catalogo_publico():
     if localidad:
         query += " AND localidad = %s"
         params.append(localidad)
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     if tipo:
         query += " AND tipo_inmueble = %s"
         params.append(tipo)
@@ -157,11 +141,7 @@ def catalogo_publico():
     # 4. Ordenar por lo más reciente
     query += " ORDER BY id_vivienda DESC"
 
-<<<<<<< HEAD
-    # 5. Ejecutar con los parámetros seguros
-=======
     # 5. Ejecutar con los parámetros seguros (Corregidos espacios invisibles corruptos)
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     cursor.execute(query, params)
     viviendas = cursor.fetchall()
 
@@ -169,11 +149,7 @@ def catalogo_publico():
     conn.close()
 
     return render_template(
-<<<<<<< HEAD
-        "clientes/HOME.html",
-=======
         "clientes/home.html",
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         viviendas=viviendas
     )
 
@@ -302,8 +278,4 @@ def eliminar_vivienda(id):
     cursor.execute("DELETE FROM vivienda WHERE id_vivienda = %s", (id,))
 
     conexion.commit()
-<<<<<<< HEAD
     return redirect(url_for("agente.vivienda"))
-=======
-    return redirect(url_for("agente.vivienda"))
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
