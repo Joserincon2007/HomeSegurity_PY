@@ -9,11 +9,8 @@ from models.avaluos import Avaluo
 from extensions import db
 from routes.correo import enviar_correo_credenciales
 from models.vivienda import Vivienda
-<<<<<<< HEAD
-=======
 from conexion import get_connection
 
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
 
 
 auth = Blueprint('auth', __name__)
@@ -30,10 +27,6 @@ def generar_password():
 # ==============================
 @auth.route('/agregar-usuarios', methods=['POST'])
 def agregarUsuarios():
-<<<<<<< HEAD
-
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     try:
         nombre = request.form.get('primerNombre')
         apellido = request.form.get('primerApellido')
@@ -44,26 +37,12 @@ def agregarUsuarios():
         direccion = request.form.get('direccion')
         password = request.form.get('contraseña')
 
-<<<<<<< HEAD
-        
-
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         if not nombre or not correo or not password:
             return render_template(
                 'agregarUsuarios.html',
                 message="Faltan datos"
             )
 
-<<<<<<< HEAD
-        cur = mysql.connection.cursor()
-
-        sql = """
-        INSERT INTO usuario
-        (primerNombre, primerApellido, contraseña, edad,
-         direccion, num_documento, correo, telefono, estadoCuenta)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'ACTIVO')
-=======
         # 🔄 USAMOS LA CONEXIÓN CORRECTA HACIA RAILWAY
         conn = get_connection()
         cur = conn.cursor()
@@ -74,7 +53,6 @@ def agregarUsuarios():
         (primerNombre, primerApellido, contraseña, edad,
          direccion, num_documento, correo, telefono, estadoCuenta, rol)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'ACTIVO', 'USER')
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         """
 
         cur.execute(sql, (
@@ -82,15 +60,6 @@ def agregarUsuarios():
             direccion, documento, correo, telefono
         ))
 
-<<<<<<< HEAD
-        mysql.connection.commit()
-
-        # obtener id insertado
-        usuario_id = cur.lastrowid
-        cur.close()
-
-        # 🔥 guardar sesión
-=======
         # Guardamos los cambios en Railway
         conn.commit()
 
@@ -100,31 +69,12 @@ def agregarUsuarios():
         conn.close()
 
         # 🔥 Guardar sesión
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         session['idUsuario'] = usuario_id
         session['usuario'] = nombre
         session['apellido'] = apellido
         session['correo'] = correo
         session['rol'] = "USER"
 
-<<<<<<< HEAD
-        return redirect(url_for('auth.login'))
-
-    except Exception as e:
-        print("ERROR REGISTRO:", e)
-        return render_template(
-            'agregarUsuarios.html',
-            message="Error al registrar"
-        )
-
-
-# ==============================
-# LOGIN
-# ==============================
-@auth.route('/login', methods=['POST',"GET"])
-def login():
-
-=======
         # Redirigir al login o directo al home si ya inició sesión
         return redirect(url_for('auth.login'))
 
@@ -140,7 +90,6 @@ def login():
 # ==============================
 @auth.route('/login', methods=['POST', 'GET'])
 def login():
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     # 👉 SOLO mostrar login
     if request.method == "GET":
         return render_template("index.html")
@@ -149,39 +98,6 @@ def login():
     correo = request.form.get('nombre_usuario')
     password = request.form.get('contrasena')
 
-<<<<<<< HEAD
-    cur = mysql.connection.cursor()
-
-    cur.execute("""
-        SELECT idUsuario, primerNombre,
-               primerApellido, correo, rol
-        FROM usuario
-        WHERE correo=%s AND contraseña=%s
-    """, (correo, password))
-
-    user = cur.fetchone()
-    cur.close()
-
-    if user:
-
-        session['idUsuario'] = user[0]
-        session['usuario'] = user[1]
-        session['apellido'] = user[2]
-        session['correo'] = user[3]
-        session['rol'] = user[4]
-
-        if user[4] == "ADMIN":
-            return redirect(url_for('admin.dashboard'))
-
-        if user[4] == "AGENTE":
-            return redirect(url_for("agente.vivienda"))
-        
-        if user[4] == "PERITO":
-            return redirect(url_for("avaluos.dashboard_perito"))
-
-        return redirect(url_for('home_usuario'))
-
-=======
     # 🔄 Usamos la conexión correcta a Railway
     conn = get_connection()
     cur = conn.cursor()
@@ -230,16 +146,11 @@ def login():
             return redirect(url_for('home_usuario'))
 
     # Si no entra a ningún if, las credenciales están mal
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     return render_template(
         "index.html",
         message="Credenciales incorrectas"
     )
 
-<<<<<<< HEAD
-
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
 @auth.route("/viviendas")
 def ver_vivienda():
 
@@ -267,30 +178,6 @@ def solicitar_admin_form():
 
 @auth.route('/solicitar_admin', methods=['POST'])
 def solicitar_admin():
-<<<<<<< HEAD
-
-    nombre = request.form['nombre']
-    apellido = request.form['apellido']
-    correo = request.form['correo']
-    cargo = request.form['cargo']
-
-    cur = mysql.connection.cursor()
-
-    cur.execute("""
-        INSERT INTO solicitudes_admin
-        (nombre, apellido, correo, cargo, estado)
-        VALUES (%s,%s,%s,%s,'PENDIENTE')
-    """,(nombre,apellido,correo,cargo))
-
-    mysql.connection.commit()
-    cur.close()
-
-    flash('success_modal') 
-    return redirect(url_for('auth.solicitar_admin_form'))
-
-
-
-=======
     import sys  # Para capturar el error en journalctl
 
     try:
@@ -323,4 +210,3 @@ def solicitar_admin():
         flash('error_modal') # O el manejo que prefieras
 
     return redirect(url_for('auth.solicitar_admin_form'))
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
