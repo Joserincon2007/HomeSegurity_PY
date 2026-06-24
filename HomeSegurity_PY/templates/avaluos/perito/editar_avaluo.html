@@ -1,0 +1,43 @@
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg" style="border-left: 5px solid #001f3f !important;">
+                <div class="card-body p-5">
+                    <h3 class="fw-bold mb-4" style="color: #001f3f;">Editar Avalúo #{{ avaluo.id_avaluo }}</h3>
+                    <form action="{{ url_for('avaluos.editar_avaluo', id=avaluo.id_avaluo) }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted text-uppercase">Nombre del Solicitante</label>
+                            <input type="text" name="solicitante" class="form-control form-control-lg border-0 bg-light" value="{{ avaluo.solicitante }}">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-muted text-uppercase">Valor Total Actual</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-0 bg-light">$</span>
+                                    <input type="number" name="valor_total" class="form-control form-control-lg border-0 bg-light" value="{{ avaluo.valor_total }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-muted text-uppercase">Localidad</label>
+                                <input type="text" name="localidad" class="form-control form-control-lg border-0 bg-light" value="{{ avaluo.localidad }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small text-muted text-uppercase">Descripción del Peritaje</label>
+                            <textarea name="descripcion" class="form-control border-0 bg-light" rows="4">{{ avaluo.descripcion }}</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-lg shadow-sm" style="background-color: #001f3f; color: white;">Actualizar Registro Técnico</button>
+                            <a href="{{ url_for('avaluos.listar_perito') }}" class="btn btn-link text-muted">Volver al listado</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

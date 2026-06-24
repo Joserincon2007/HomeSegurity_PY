@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Formal - Registro</title>
+    <style>
+        /* --- RESETEO Y ESTILOS BASE --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            color: #333;
+        }
+
+        /* --- FONDO DEGRADADO AZUL OSCURO FORMAL (Dashboard) --- */
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            /* Degradado sofisticado: de azul noche a azul marino muy profundo */
+            background: linear-gradient(135deg, #1a2a6c 0%, #101a44 50%, #080f2b 100%);
+        }
+
+        /* --- BARRA LATERAL (SIDEBAR) --- */
+        .sidebar {
+            width: 260px;
+            background-color: rgba(0, 0, 0, 0.2); /* Oscurece ligeramente el fondo */
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand {
+            color: #fff;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 50px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-bottom: 15px;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding-left: 20px;
+        }
+
+        /* --- ÁREA DE CONTENIDO PRINCIPAL --- */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto; /* Permite scroll si el contenido es largo */
+        }
+
+        .header-content {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+
+        .header-content h1 {
+            color: #fff;
+            font-size: 28px;
+            font-weight: 300;
+        }
+
+        .user-info {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+
+        /* --- PANEL DEL FORMULARIO --- */
+        .form-panel {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            margin: 0 auto; /* Centrar el panel */
+        }
+
+        .form-panel h2 {
+            color: #233b99; /* Azul oscuro formal */
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .form-subtitle {
+            color: #777;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        /* --- ESTILOS DEL FORMULARIO (Mejorados) --- */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        fieldset {
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        legend {
+            color: #1a2a6c;
+            font-weight: bold;
+            padding: 0 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background-color: #f9f9f9;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1a2a6c;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+        }
+
+        /* --- ESTILOS FORMALES PARA EL INPUT FILE (La Foto) --- */
+        .file-upload-wrapper {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-wrapper:hover {
+            border-color: #1a2a6c;
+            background-color: rgba(26, 42, 108, 0.05);
+        }
+
+        .file-upload-wrapper::after {
+            content: 'Seleccionar fotografía o arrastrar aquí';
+            color: #777;
+            font-size: 14px;
+        }
+
+        /* Ocultamos el input real pero mantenemos su funcionalidad */
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+        }
+
+        /* --- BOTÓN DE ENVÍO (Submit) --- */
+        .btn-submit {
+            width: 100%;
+            background-color: #1a2a6c; /* Azul oscuro */
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: #0d1a44; /* Azul más oscuro al pasar el mouse */
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px); /* Efecto de pulsado */
+        }
+
+        /* Responsive simple */
+        @media (max-width: 768px) {
+            .dashboard-container { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; padding: 20px; }
+            .brand { margin-bottom: 20px; }
+            .nav-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .nav-links li { margin-bottom: 0; }
+            .main-content { padding: 20px; }
+            .form-panel { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="brand">InmoPro Admin</div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('admin.dashboard') }}">Inicio</a></li>
+                <li><a href="#" class="active">Añadir Propiedad</a></li>
+                <li><a href="{{ url_for('agente.vivienda') }}">Lista de Propiedades</a></li>
+                <li><a href="#">Reportes</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="header-content">
+                <h1>Panel de Gestión</h1>
+                <div class="user-info">Bienvenido, Administrador | <a href="#" style="color: #fff; text-decoration: none; opacity: 0.7;">Salir</a></div>
+            </div>
+
+            <div class="form-panel">
+                <h2>Registrar Nueva Vivienda</h2>
+                <p class="form-subtitle">Complete todos los campos requeridos para dar de alta la propiedad en el sistema.</p>
+                
+<form method="POST" enctype="multipart/form-data">
+
+    <fieldset>
+        <legend>Ubicación</legend>
+
+<div>
+    <label>Ciudad</label>
+    <select name="ciudad" id="ciudad" required>
+        <option value="Bogotá D.C." selected>Bogotá D.C.</option>
+    </select>
+</div>
+
+        <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" name="direccion" required>
+        </div>
+
+        <div>
+    <label>Localidad</label>
+    <select name="localidad" id="localidad" required>
+        <option value="" disabled selected>Seleccione una localidad</option>
+        </select>
+    </div>
+    </fieldset>
+
+    <!-- DATOS PARA AVALÚO -->
+    <fieldset>
+        <legend>Características de la Vivienda</legend>
+
+<div class="form-group">
+    <label>Tipo de vivienda</label>
+    <select name="tipo_inmueble" required> 
+        <option value="CASA">Casa</option>
+        <option value="APARTAMENTO">Apartamento</option>
+        <option value="LOCAL">Local</option>
+    </select>
+</div>
+
+        <div class="form-group">
+            <label>Área (m²)</label>
+            <input type="number" name="area_m2" required>
+        </div>
+
+        <div class="form-group">
+            <label>Habitaciones</label>
+            <input type="number" name="habitaciones" required>
+        </div>
+
+        <div class="form-group">
+            <label>Baños</label>
+            <input type="number" name="banos" required>
+        </div>
+
+        <div class="form-group">
+            <label>Garajes</label>
+            <input type="number" name="parqueaderos" value="0">
+        </div>
+
+        <div class="form-group">
+            <label>Estrato</label>
+            <input type="number" name="estrato" min="1" max="6" required>
+        </div>
+
+        <div class="form-group">
+            <label>Antigüedad (años)</label>
+            <input type="number" name="antiguedad" required>
+        </div>
+
+    </fieldset>
+
+    <div class="form-group">
+        <label>Precio</label>
+        <input type="number" step="0.01" name="precio" required>
+    </div>
+
+    <div class="form-group">
+        <label>Estado</label>
+        <select name="estado">
+            <option value="ACTIVO">ACTIVO</option>
+            <option value="INACTIVO">INACTIVO</option>
+            <option value="VENDIDO">VENDIDO</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Descripción</label>
+        <textarea name="descripcion" required></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Fotografía</label>
+        <div class="file-upload-wrapper">
+            <input type="file" name="foto" accept="image/*">
+        </div>
+    </div>
+
+    <button type="submit" class="btn-submit">
+        Guardar Propiedad
+    </button>
+
+</form>
+
+                </form>
+            </div>
+        </main>
+    </div>
+<script>
+    const localidades = [
+        "Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme", 
+        "Tunjuelito", "Bosa", "Kennedy", "Fontibón", "Engativá", 
+        "Suba", "Barrios Unidos", "Teusaquillo", "Los Mártires", 
+        "Antonio Nariño", "Puente Aranda", "La Candelaria", 
+        "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"
+    ];
+
+    const selectLocalidad = document.getElementById('localidad');
+    
+    // Esta línea es la clave: si vivienda no existe, usa una cadena vacía
+    const valorPrevio = "{{ vivienda.localidad if vivienda is defined else '' }}"; 
+
+    localidades.forEach(loc => {
+        let option = document.createElement('option');
+        option.value = loc;
+        option.text = loc;
+        if (loc === valorPrevio) option.selected = true;
+        selectLocalidad.appendChild(option);
+    });
+</script>
+</body>
+</html>

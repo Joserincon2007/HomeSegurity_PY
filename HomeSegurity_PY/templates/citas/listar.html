@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis Citas | HomeSecurity</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+    :root {
+        --azul-primario: #153868; 
+        --azul-oscuro: #021024;
+        --azul-claro: #ebf8ff;    
+        --azul-borde: #bee3f8;    
+        --texto-gris: #4a5568;
+        --blanco: #ffffff;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #021024 0%, #052659 100%);
+        color: var(--texto-gris);
+        padding: 0;
+        margin: 0;
+        min-height: 100vh;
+    }
+
+    /* Navbar sutil */
+    .nav-simple {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-volver-home {
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: 0.3s;
+    }
+
+    .btn-volver-home:hover {
+        background: white;
+        color: var(--azul-oscuro);
+    }
+
+    h2 {
+        color: white;
+        margin: 40px 0;
+        text-align: center;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .citas-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 25px;
+        padding: 20px;
+        justify-content: center;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .cita-card {
+        background: var(--blanco);
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        padding: 25px;
+        width: 320px;
+        transition: transform 0.3s ease;
+    }
+
+    .cita-card:hover {
+        transform: translateY(-8px);
+    }
+
+    .cita-header {
+        font-weight: bold;
+        color: var(--azul-primario);
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        display: block;
+        border-bottom: 2px solid var(--azul-claro);
+        padding-bottom: 10px;
+    }
+
+    .cita-detalle {
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+        color: #2d3748;
+    }
+
+    .label {
+        font-weight: 700;
+        color: #718096;
+        width: 70px;
+        display: inline-block;
+    }
+
+    .estado-tag {
+        display: inline-block;
+        background-color: #e2e8f0;
+        color: var(--azul-primario);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .btn-eliminar {
+        display: block;
+        margin-top: 25px;
+        text-align: center;
+        background-color: #fee2e2;
+        color: #dc2626;
+        text-decoration: none;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .btn-eliminar:hover {
+        background-color: #dc2626;
+        color: white;
+    }
+
+    /* Mensaje si no hay citas */
+    .no-citas {
+        color: rgba(255, 255, 255, 0.6);
+        text-align: center;
+        margin-top: 50px;
+    }
+    /* Contenedor principal a la derecha */
+.nav-end {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espacio entre el nombre y el botón */
+    margin-left: auto; /* Esto empuja todo a la derecha si usas Flexbox en la navbar */
+}
+
+/* Estilo para el nombre del usuario */
+.nav-end .text-light {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255, 255, 255, 0.1); /* Fondo sutil detrás del nombre */
+    padding: 5px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Botón de Salir con estilo formal */
+.nav-end .btn-outline-light {
+    border-radius: 20px;
+    font-size: 0.85rem;
+    padding: 5px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.nav-end .btn-outline-light:hover {
+    background-color: #dc3545; /* Rojo discreto al pasar el mouse para indicar cierre */
+    border-color: #dc3545;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+</style>
+</head>
+<body>
+
+    <nav class="nav-simple">
+        <span style="color: white; font-weight: bold; font-size: 1.2rem;">
+            <i class="bi bi-shield-lock"></i> HomeSecurity
+        </span>
+        <a href="{{ url_for('auth.ver_vivienda') }}" class="btn-volver-home">
+            <i class="bi bi-house-door"></i> Volver al Catálogo
+        </a>
+
+            <div class="nav-end">
+        {% if session.usuario %}
+            <span class="text-light me-2">
+                👤 {{ session.usuario }} {{ session.apellido }}
+            </span>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light">Salir</a>
+        {% endif %}
+    </div>
+    </nav>
+
+    <h2>Mis Citas Programadas</h2>
+
+    <div class="citas-container">
+        {% if citas %}
+            {% for c in citas %}
+            <div class="cita-card">
+                <span class="cita-header"><i class="bi bi-geo-alt"></i> {{ c.direccion }}</span>
+                
+                <div class="cita-detalle">
+                    <span class="label">Ciudad:</span> {{ c.ciudad }}
+                </div>
+                
+                <div class="cita-detalle">
+                    <span class="label">Fecha:</span> <i class="bi bi-calendar3"></i> {{ c.fecha }}
+                </div>
+                
+                <div class="cita-detalle">
+                    <span class="label">Hora:</span> <i class="bi bi-clock"></i> {{ c.hora }}
+                </div>
+                
+                <div class="cita-detalle">
+                    <span class="label">Estado:</span> 
+                    <span class="estado-tag">{{ c.estado }}</span>
+                </div>
+
+                <a href="{{ url_for('citas.eliminar_cita', id=c.id) }}" class="btn-eliminar" onclick="return confirm('¿Deseas cancelar esta cita?')">
+                    <i class="bi bi-trash"></i> Cancelar Cita
+                </a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-citas">
+                <i class="bi bi-calendar-x" style="font-size: 3rem;"></i>
+                <p>No tienes citas registradas actualmente.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

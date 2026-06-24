@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editar Vivienda</title>
+
+<style>
+
+/* ===== RESET ===== */
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+height:100vh;
+display:flex;
+background:linear-gradient(135deg,#1a2a6c,#080f2b);
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+width:260px;
+background:rgba(0,0,0,.25);
+padding:30px 20px;
+color:white;
+}
+
+.brand{
+font-size:22px;
+font-weight:bold;
+text-align:center;
+margin-bottom:40px;
+letter-spacing:2px;
+}
+
+.nav-links{
+list-style:none;
+}
+
+.nav-links a{
+display:block;
+padding:12px;
+color:#cbd5e1;
+text-decoration:none;
+border-radius:6px;
+}
+
+.nav-links a:hover{
+background:rgba(255,255,255,.1);
+color:white;
+}
+
+/* ===== CONTENIDO ===== */
+.main-content{
+flex:1;
+padding:40px;
+overflow:auto;
+}
+
+.form-panel{
+background:white;
+padding:40px;
+border-radius:12px;
+max-width:800px;
+margin:auto;
+box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+
+h2{
+color:#1a2a6c;
+margin-bottom:20px;
+}
+
+/* ===== INPUTS ===== */
+label{
+font-weight:600;
+margin-top:15px;
+display:block;
+color:#1a2a6c;
+}
+
+input,select,textarea{
+width:100%;
+padding:12px;
+margin-top:6px;
+border-radius:6px;
+border:1px solid #ddd;
+background:#f9f9f9;
+}
+
+input:focus,select:focus,textarea:focus{
+outline:none;
+border-color:#1a2a6c;
+background:white;
+}
+
+/* GRID CAMPOS */
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+/* FOTO */
+.current-photo{
+margin-top:15px;
+background:#f1f5f9;
+padding:15px;
+border-radius:8px;
+text-align:center;
+}
+
+.current-photo img{
+max-width:250px;
+border-radius:8px;
+}
+
+/* FILE */
+.file-upload{
+border:2px dashed #cbd5e1;
+height:50px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:6px;
+margin-top:10px;
+cursor:pointer;
+position:relative;
+}
+
+.file-upload input{
+position:absolute;
+width:100%;
+height:100%;
+opacity:0;
+}
+
+/* BOTON */
+button{
+margin-top:25px;
+width:100%;
+padding:15px;
+background:#1a2a6c;
+color:white;
+border:none;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#0d1a44;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+<div class="brand">InmoPro</div>
+
+<ul class="nav-links">
+<li><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+<li><a href="{{ url_for('agente.vivienda') }}">Viviendas</a></li>
+</ul>
+</aside>
+
+<!-- CONTENIDO -->
+<main class="main-content">
+
+<div class="form-panel">
+
+<h2>✏️ Editar Vivienda</h2>
+
+<form method="POST" enctype="multipart/form-data">
+
+<!-- UBICACION -->
+<div class="grid">
+
+<div>
+    <label>Ciudad</label>
+    <select name="ciudad" id="ciudad" required>
+        <option value="Bogotá D.C." {% if vivienda.ciudad == 'Bogotá D.C.' %}selected{% endif %}>Bogotá D.C.</option>
+    </select>
+</div>
+
+<div>
+    <label>Localidad</label>
+    <select name="localidad" id="localidad" required>
+        <option value="" disabled>Seleccione una localidad</option>
+        </select>
+</div>
+
+<div>
+    <label>Tipo de Inmueble</label>
+    <select name="tipo_inmueble" required>
+        <option value="APARTAMENTO" {% if vivienda.tipo_inmueble == 'Apartamento' %}selected{% endif %}>Apartamento</option>
+        <option value="CASA" {% if vivienda.tipo_inmueble == 'Casa' %}selected{% endif %}>Casa</option>
+        <option value="LOCAL" {% if vivienda.tipo_inmueble == 'local' %}selected{% endif %}>local</option>
+    </select>
+</div>
+
+</div>
+
+<label>Dirección</label>
+<input type="text" name="direccion" value="{{ vivienda.direccion }}" required>
+
+<!-- CARACTERISTICAS -->
+<div class="grid">
+
+<div>
+<label>Área (m²)</label>
+<input type="number" name="area_m2" value="{{ vivienda.area_m2 }}" required>
+</div>
+
+<div>
+<label>Estrato</label>
+<input type="number" name="estrato" value="{{ vivienda.estrato }}" required>
+</div>
+
+<div>
+<label>Habitaciones</label>
+<input type="number" name="habitaciones" value="{{ vivienda.habitaciones }}" required>
+</div>
+
+<div>
+<label>Baños</label>
+<input type="number" name="banos" value="{{ vivienda.banos }}" required>
+</div>
+
+<div>
+<label>Parqueaderos</label>
+<input type="number" name="parqueaderos" value="{{ vivienda.parqueaderos }}">
+</div>
+
+<div>
+<label>Antigüedad (años)</label>
+<input type="number" name="antiguedad" value="{{ vivienda.antiguedad }}">
+</div>
+
+</div>
+
+<label>Precio Comercial</label>
+<input type="number" name="precio" value="{{ vivienda.precio }}" required>
+
+<label>Estado Publicación</label>
+<select name="estado">
+<option value="ACTIVO" {% if vivienda.estado_publicacion=='ACTIVO' %}selected{% endif %}>ACTIVO</option>
+<option value="INACTIVO" {% if vivienda.estado_publicacion=='INACTIVO' %}selected{% endif %}>INACTIVO</option>
+<option value="VENDIDO" {% if vivienda.estado_publicacion=='VENDIDO' %}selected{% endif %}>VENDIDO</option>
+</select>
+
+<label>Descripción</label>
+<textarea name="descripcion">{{ vivienda.descripcion }}</textarea>
+
+<!-- FOTO -->
+<label>Cambiar Imagen</label>
+<div class="file-upload">
+<input type="file" name="foto">
+<span>Click para subir nueva imagen</span>
+</div>
+
+{% if vivienda.foto %}
+<div class="current-photo">
+<p>Foto actual</p>
+<img src="{{ url_for('static', filename='uploads/' + vivienda.foto) }}">
+</div>
+{% endif %}
+
+<button type="submit">
+Guardar Cambios
+</button>
+
+</form>
+
+</div>
+</main>
+
+<script>
+    const localidades = [
+        "Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme", 
+        "Tunjuelito", "Bosa", "Kennedy", "Fontibón", "Engativá", 
+        "Suba", "Barrios Unidos", "Teusaquillo", "Los Mártires", 
+        "Antonio Nariño", "Puente Aranda", "La Candelaria", 
+        "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"
+    ];
+
+    const selectLocalidad = document.getElementById('localidad');
+    const valorPrevio = "{{ vivienda.localidad }}"; // Valor que viene de la base de datos
+
+    localidades.forEach(loc => {
+        let option = document.createElement('option');
+        option.value = loc;
+        option.text = loc;
+        
+        // Seleccionar automáticamente la opción si coincide con los datos de la vivienda
+        if (loc === valorPrevio) {
+            option.selected = true;
+        }
+        
+        selectLocalidad.appendChild(option);
+    });
+</script>
+
+</body>
+</html>
