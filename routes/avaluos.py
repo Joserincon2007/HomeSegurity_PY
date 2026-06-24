@@ -1,19 +1,12 @@
-<<<<<<< HEAD
-=======
 import sys
 import os
 import base64  # Requerido para codificar el PDF adjunto en la API de Brevo
 import requests
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
 from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response, session
 from models.avaluos import Avaluo
 from models.vivienda import Vivienda
 from utils.precios_bogota import calcular_avaluo
 from utils.generador_pdf import generar_pdf
-<<<<<<< HEAD
-from utils.correo import enviar_correo
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
 from models.usuarios import Usuario 
 from models.perito import Perito
 from extensions import db
@@ -21,12 +14,6 @@ from datetime import datetime
 
 avaluos = Blueprint("avaluos", __name__, url_prefix="/avaluos")
 
-<<<<<<< HEAD
-# 1. VISTA PARA MOSTRAR EL FORMULARIO
-@avaluos.route("/crear/<int:vivienda_id>", methods=["GET"])
-def crear(vivienda_id):
-    # Protección: Opción B (Si no hay idUsuario, redirigir al login)
-=======
 # ==============================================================================
 # FUNCIÓN INTERNA AUXILIAR: ENVIAR CORREO MEDIANTE API BREVO CON/SIN ADJUNTO
 # ==============================================================================
@@ -82,7 +69,6 @@ def enviar_correo_api_brevo(receptor, asunto, cuerpo, adjunto_bytes=None, nombre
 # 1. VISTA PARA MOSTRAR EL FORMULARIO
 @avaluos.route("/crear/<int:vivienda_id>", methods=["GET"])
 def crear(vivienda_id):
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     if 'idUsuario' not in session:
         flash("Debes iniciar sesión para solicitar un avalúo.", "warning")
         return redirect(url_for('auth.login'))
@@ -118,10 +104,6 @@ def preview_pdf(vivienda_id):
         vivienda.parqueaderos
     )
     
-<<<<<<< HEAD
-    # Objeto temporal. Pasamos strings vacíos para solicitante y correo ya que es solo preview
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     temp_avaluo = Avaluo(
         id_vivienda=vivienda.id_vivienda,
         solicitante=f"{session.get('usuario', '')} {session.get('apellido', '')}",
@@ -144,16 +126,9 @@ def preview_pdf(vivienda_id):
     response.headers['Content-Disposition'] = 'inline; filename=previsualizacion_avaluo.pdf'
     return response
 
-<<<<<<< HEAD
-# 3. FUNCIÓN FINAL: PROCESAR, GUARDAR Y ENVIAR CORREO
-@avaluos.route("/procesar", methods=["POST"])
-def procesar_avaluo():
-    # --- VALIDACIÓN DE SESIÓN (Sincronizada con tu Login) ---
-=======
 # 3. FUNCIÓN FINAL: PROCESAR, GUARDAR Y ENVIAR CORREO VIA API
 @avaluos.route("/procesar", methods=["POST"])
 def procesar_avaluo():
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     if 'idUsuario' not in session:
         flash("Sesión expirada. Por favor, ingresa a tu cuenta.", "danger")
         return redirect(url_for('auth.login'))
@@ -161,10 +136,6 @@ def procesar_avaluo():
     vivienda_id = request.form.get("vivienda_id")
     correo_cliente = request.form.get("correo") or session.get('correo')
     
-<<<<<<< HEAD
-    # Extraemos datos usando tus llaves de sesión: idUsuario, usuario, apellido
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     id_usuario_logueado = session.get('idUsuario')
     nombre_completo = f"{session.get('usuario')} {session.get('apellido')}".strip()
 
@@ -179,10 +150,6 @@ def procesar_avaluo():
     )
 
     try:
-<<<<<<< HEAD
-        # Creamos el objeto con los argumentos requeridos por el constructor (__init__)
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         nuevo_avaluo = Avaluo(
             id_vivienda=vivienda.id_vivienda,
             solicitante=nombre_completo,
@@ -202,15 +169,6 @@ def procesar_avaluo():
         db.session.add(nuevo_avaluo)
         db.session.commit()
 
-<<<<<<< HEAD
-        # Enviar PDF real después de guardar
-        pdf_final = generar_pdf(nuevo_avaluo, vivienda)
-        enviar_correo(
-            receptor=correo_cliente,
-            asunto="Tu Avalúo Técnico - homeSegurity",
-            cuerpo=f"Hola {nombre_completo}, adjuntamos el avalúo de tu propiedad.",
-            adjunto=pdf_final
-=======
         # Generar PDF real desde binario
         pdf_final = generar_pdf(nuevo_avaluo, vivienda)
         
@@ -221,7 +179,6 @@ def procesar_avaluo():
             cuerpo=f"Hola {nombre_completo}, adjuntamos el informe del avalúo técnico de tu propiedad.",
             adjunto_bytes=pdf_final,
             nombre_adjunto=f"Avaluo_{vivienda.localidad}.pdf"
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         )
 
         flash("Avalúo generado y enviado a tu correo correctamente.", "success")
@@ -229,11 +186,7 @@ def procesar_avaluo():
 
     except Exception as e:
         db.session.rollback()
-<<<<<<< HEAD
-        print(f"DEBUG ERROR EN PROCESAR: {e}")
-=======
         print(f"❌ DEBUG ERROR EN PROCESAR AVALÚO: {e}", file=sys.stderr)
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         flash(f"Error al guardar: {str(e)}", "danger")
         return redirect(request.referrer)
 
@@ -250,61 +203,29 @@ def listar():
 
 @avaluos.route("/dashboard_perito")
 def dashboard_perito():
-<<<<<<< HEAD
-    # Realizamos un JOIN para obtener tanto el avaluo como la vivienda asociada
-    # Esto genera la "tupla" que el HTML espera (avaluo, vivienda)
     avaluos_con_vivienda = db.session.query(Avaluo, Vivienda).join(
         Vivienda, Avaluo.id_vivienda == Vivienda.id_vivienda
     ).all()
-    
-=======
-    avaluos_con_vivienda = db.session.query(Avaluo, Vivienda).join(
-        Vivienda, Avaluo.id_vivienda == Vivienda.id_vivienda
-    ).all()
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     return render_template("dashboard/dashboard_perito.html", avaluos=avaluos_con_vivienda)
 
 @avaluos.route("/confirmar_cita/<int:id_avaluo>", methods=["POST"])
 def confirmar_cita(id_avaluo):
-<<<<<<< HEAD
-    # 1. Obtener datos del avalúo y la vivienda
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     avaluo = Avaluo.query.get_or_404(id_avaluo)
     vivienda = Vivienda.query.get(avaluo.id_vivienda)
     
     fecha_cita = request.form.get("fecha_cita")
-<<<<<<< HEAD
-    # Limpiamos el ID del perito y el nombre del solicitante de cualquier espacio
     id_perito = request.form.get("id_perito")
     
-    # --- LIMPIEZA DE DATOS PARA EVITAR ERROR 555 ---
-    # Convertimos a string y usamos .strip() para eliminar espacios o saltos de línea
-=======
-    id_perito = request.form.get("id_perito")
-    
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     correo_destino = str(avaluo.correo).strip()
     nombre_cliente = str(avaluo.solicitante).strip()
 
     try:
-<<<<<<< HEAD
-        # 2. Actualizar el registro en la base de datos
-        avaluo.id_perito = id_perito
-        db.session.commit()
-
-        # 3. Generar el PDF
-        pdf_adjunto = generar_pdf(avaluo, vivienda)
-
-        # 4. Redactar el mensaje (Aseguramos que no haya caracteres extraños)
-=======
         avaluo.id_perito = id_perito
         db.session.commit()
 
         # Generamos el reporte preliminar
         pdf_adjunto = generar_pdf(avaluo, vivienda)
 
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         cuerpo_correo = f"""
 Hola {nombre_cliente},
 
@@ -313,11 +234,7 @@ Su solicitud de avalúo para la propiedad ubicada en {vivienda.direccion} ha sid
 DETALLES DE LA VISITA TÉCNICA:
 
 Fecha y Hora: {fecha_cita}
-<<<<<<< HEAD
-Perito Asignado: {id_perito}
-=======
 Perito Asignado: ID {id_perito}
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
 
 REQUISITOS OBLIGATORIOS PARA LA INSPECCIÓN:
 Para proceder con la certificación del avalúo de su apartamento, es necesario que tenga listos:
@@ -330,22 +247,6 @@ Para proceder con la certificación del avalúo de su apartamento, es necesario 
 
 IMPORTANTE: La visita dura entre 45 a 60 minutos. El perito debe acceder a todas las áreas.
 
-<<<<<<< HEAD
-Adjunto encontrará el informe preliminar de homeSegurity.
-
-Atentamente,
-Departamento Técnico - homeSegurity
-"""
-
-        # 5. Notificar por correo con datos limpios
-        print(f"DEBUG: Intentando enviar correo a: '{correo_destino}'")
-        
-        enviar_correo(
-            receptor=correo_destino,
-            asunto="CONFIRMACIÓN: Cita de Inspección y Requisitos",
-            cuerpo=cuerpo_correo,
-            adjunto=pdf_adjunto
-=======
 Adjunto encontrará el informe preliminar de Home Security.
 
 Atentamente,
@@ -360,42 +261,17 @@ Departamento Técnico - Home Security
             cuerpo=cuerpo_correo,
             adjunto_bytes=pdf_adjunto,
             nombre_adjunto="Inspeccion_Preliminar.pdf"
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         )
 
         flash(f"Cita confirmada. Requisitos enviados a {correo_destino}.", "success")
 
     except Exception as e:
         db.session.rollback()
-<<<<<<< HEAD
-        # Imprimimos el error completo en consola para debuggear
-        print(f"Error detallado en confirmar_cita: {type(e).__name__} - {e}")
-=======
         print(f"❌ Error detallado en confirmar_cita: {type(e).__name__} - {e}", file=sys.stderr)
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         flash("Error al procesar la confirmación. Verifica la configuración de correo.", "danger")
 
     return redirect(url_for('avaluos.dashboard_perito'))
 
-<<<<<<< HEAD
-
-@avaluos.route("/sincronizar_peritos")
-def sincronizar_peritos():
-    try:
-        from models.usuarios import Usuario 
-        from models.perito import Perito     
-
-        # Filtramos usuarios con rol PERITO
-        usuarios_peritos = Usuario.query.filter_by(rol='PERITO').all()
-        
-        contador = 0
-        for u in usuarios_peritos:
-            # Verificamos si ya existe en la tabla perito por su idUsuario
-            existe = Perito.query.filter_by(idUsuario=u.idUsuario).first()
-            
-            if not existe:
-                # Creamos el registro en la tabla perito usando los datos de usuario
-=======
 @avaluos.route("/sincronizar_peritos")
 def sincronizar_peritos():
     try:
@@ -404,56 +280,26 @@ def sincronizar_peritos():
         for u in usuarios_peritos:
             existe = Perito.query.filter_by(idUsuario=u.idUsuario).first()
             if not existe:
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
                 nuevo_perito = Perito(
                     idUsuario=u.idUsuario,
                     registro_raa="SIN_REGISTRO", 
                     categoria_especializacion="General",
                     formacion_academica="Técnico/Profesional",
-<<<<<<< HEAD
-                    experiencia_anios=0,
-                    direccion_oficina=u.direccion # Usamos la dirección de la tabla usuario
-=======
                     experience_anios=0,
                     direccion_oficina=u.direccion 
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
                 )
                 db.session.add(nuevo_perito)
                 contador += 1
         
         db.session.commit()
         flash(f"Sincronización terminada. {contador} usuarios ahora son peritos activos.", "success")
-<<<<<<< HEAD
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"ERROR DE SINCRONIZACIÓN: {e}")
-=======
     except Exception as e:
         db.session.rollback()
         print(f"❌ ERROR DE SINCRONIZACIÓN: {e}", file=sys.stderr)
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         flash("No se pudo sincronizar la tabla de peritos.", "danger")
         
     return redirect(url_for('avaluos.dashboard_perito'))
 
-<<<<<<< HEAD
-# --- CREACIÓN MANUAL POR EL PERITO ---
-@avaluos.route("/perito/crear_manual", methods=["GET", "POST"])
-def crear_manual():
-    if request.method == "POST":
-        print("--- INICIANDO PROCESO DE GUARDADO ---")
-        try:
-            # 1. Captura de datos del formulario
-            id_vivienda_form = request.form.get("id_vivienda")
-            id_usuario_form = request.form.get("id_usuario")
-            id_perito_form = request.form.get("id_perito") # Capturamos del select del HTML
-            
-            # 2. Conversiones seguras y manejo de variables
-            # Definimos val_perito correctamente para evitar el error "not defined"
-            val_perito = int(id_perito_form) if id_perito_form and id_perito_form.strip() else None
-            
-=======
 @avaluos.route("/perito/crear_manual", methods=["GET", "POST"])
 def crear_manual():
     if request.method == "POST":
@@ -463,7 +309,6 @@ def crear_manual():
             id_perito_form = request.form.get("id_perito") 
             
             val_perito = int(id_perito_form) if id_perito_form and id_perito_form.strip() else None
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
             v_vivienda = int(id_vivienda_form) if id_vivienda_form and id_vivienda_form.strip() else 0
             v_usuario = int(id_usuario_form) if id_usuario_form and id_usuario_form.strip() else 0
             
@@ -471,18 +316,10 @@ def crear_manual():
             v_precio = float(request.form.get("precio_m2") or 0)
             v_total = float(request.form.get("valor_total") or (v_area * v_precio))
             
-<<<<<<< HEAD
-            # 3. Creación del objeto Avaluo
-            nuevo_avaluo = Avaluo(
-                id_vivienda=v_vivienda,
-                id_usuario=v_usuario,
-                id_perito=val_perito, # <--- Ahora sí está definida
-=======
             nuevo_avaluo = Avaluo(
                 id_vivienda=v_vivienda,
                 id_usuario=v_usuario,
                 id_perito=val_perito, 
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
                 area_m2=v_area,
                 localidad=request.form.get("localidad") or "Sin especificar",
                 precio_m2=v_precio,
@@ -495,68 +332,14 @@ def crear_manual():
                 correo=request.form.get("correo") or "sin@correo.com"
             )
 
-<<<<<<< HEAD
-            # 4. Persistencia en la DB
             db.session.add(nuevo_avaluo)
             db.session.commit()
             
-            print(">>> ¡GUARDADO EXITOSO EN LA BASE DE DATOS! <<<")
-=======
-            db.session.add(nuevo_avaluo)
-            db.session.commit()
-            
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
             flash("Avalúo registrado correctamente", "success")
             return redirect(url_for('avaluos.listar_perito'))
 
         except Exception as e:
             db.session.rollback()
-<<<<<<< HEAD
-            print(f"!!! ERROR CRÍTICO: {str(e)}")
-            flash(f"Error al registrar: {str(e)}", "danger")
-    
-    # --- BLOQUE PARA CARGAR LA PÁGINA (GET) ---
-    usuarios = Usuario.query.all()
-    perito_db = Perito.query.all()
-    
-    print(f"DEBUG: Cantidad de peritos encontrados: {len(perito_db)}")
-
-    return render_template("avaluos/perito/crear_manual.html", 
-                           peritos=perito_db, 
-                           usuarios=usuarios)
-
-
-# --- LISTAR SOLO LOS AVALÚOS DEL PERITO ---
-@avaluos.route("/perito/mis_avaluos") # <-- Verifica que el prefijo del blueprint sea /avaluos
-def listar_perito():
-    # 1. Obtenemos el ID del usuario logueado desde la sesión
-    id_usuario_logueado = session.get('idUsuario')
-
-    if not id_usuario_logueado:
-        return "Error: No hay sesión activa", 401
-
-    # 2. Consultamos la tabla 'perito' para obtener su id_perito real
-    perito = Perito.query.filter_by(idUsuario=id_usuario_logueado).first()
-
-    if perito:
-        # 3. Traemos todos los avalúos que coincidan con ese id_perito
-        # Usamos .all() para obtener la lista completa
-        lista_avaluos = Avaluo.query.filter_by(id_perito=perito.id_perito).all()
-        
-        print(f"DEBUG: Se encontraron {len(lista_avaluos)} avalúos para el perito ID {perito.id_perito}")
-    else:
-        lista_avaluos = []
-        print("DEBUG: El usuario logueado no está registrado como perito.")
-
-    # 4. Enviamos los datos al HTML (asegúrate de que el nombre del archivo sea correcto)
-    return render_template("avaluos/perito/listarPerito.html", avaluos=lista_avaluos, perito=perito)
-
-# --- EDITAR AVALÚO ---
-@avaluos.route("/perito/editar/<int:id>", methods=["GET", "POST"])
-def editar_avaluo(id):
-    avaluo = Avaluo.query.get_or_404(id)
-    
-=======
             print(f"❌ ERROR CRÍTICO EN CREAR MANUAL: {str(e)}", file=sys.stderr)
             flash(f"Error al registrar: {str(e)}", "danger")
     
@@ -581,15 +364,10 @@ def listar_perito():
 @avaluos.route("/perito/editar/<int:id>", methods=["GET", "POST"])
 def editar_avaluo(id):
     avaluo = Avaluo.query.get_or_404(id)
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
     if request.method == "POST":
         avaluo.solicitante = request.form.get("solicitante")
         avaluo.valor_total = request.form.get("valor_total")
         avaluo.descripcion = request.form.get("descripcion")
-<<<<<<< HEAD
-        # Actualiza los demás campos necesarios...
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
         
         db.session.commit()
         flash("Avalúo actualizado.", "info")
@@ -597,10 +375,6 @@ def editar_avaluo(id):
         
     return render_template("avaluos/perito/editar_avaluo.html", avaluo=avaluo)
 
-<<<<<<< HEAD
-# --- ELIMINAR AVALÚO ---
-=======
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
 @avaluos.route("/perito/eliminar/<int:id>")
 def eliminar_avaluo(id):
     avaluo = Avaluo.query.get_or_404(id)
@@ -612,8 +386,4 @@ def eliminar_avaluo(id):
         db.session.rollback()
         flash("No se pudo eliminar el registro.", "danger")
         
-<<<<<<< HEAD
     return redirect(url_for('avaluos.listar_perito'))
-=======
-    return redirect(url_for('avaluos.listar_perito'))
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
