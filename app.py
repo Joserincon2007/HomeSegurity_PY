@@ -128,8 +128,4 @@ def logout():
 # RUN
 # ==============================
 if __name__ == '__main__':
-<<<<<<< HEAD
     app.run(debug=True)
-=======
-    app.run(debug=True)
->>>>>>> c67dab7e4e54e767e2a4caa836b42272f18ba9ed
