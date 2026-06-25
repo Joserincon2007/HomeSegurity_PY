@@ -1,11 +1,6 @@
-
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_mail import Message
-from extensions import mail
-
-import sys
 import os
-import requests  # 🚀 Cambiamos SMTP por peticiones HTTP v3
+import sys
+import requests
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from conexion import get_connection
 
@@ -15,19 +10,18 @@ dashboard_citas = Blueprint(
     url_prefix="/dashboard-citas"
 )
 
-
 # ==============================================================================
-# FUNCIÓN AUXILIAR DE NOTIFICACIÓN VÍA API HTTP (Puerto 443)
+# FUNCIÓN AUXILIAR DE NOTIFICACIÓN VÍA API HTTP (Inmune a bloqueos de DigitalOcean)
 # ==============================================================================
 def notificar_cambio_cita_api(receptor, estado_cita, recomendaciones_cita):
     """
-    Envía una notificación web segura evitando el bloqueo SMTP de DigitalOcean.
+    Envía una notificación web segura a través del puerto 443 usando la API v3 de Brevo.
     """
     api_key = os.environ.get('BREVO_API_KEY')
     remitente = os.environ.get('MAIL_DEFAULT_SENDER', 'joserinconxc2008@gmail.com')
 
     if not api_key:
-        print("❌ Error: Variable BREVO_API_KEY ausente en el entorno.", file=sys.stderr)
+        print("❌ Error: Variable BREVO_API_KEY ausente en el entorno de Systemd.", file=sys.stderr, flush=True)
         return False
 
     url = "https://api.brevo.com/v3/smtp/email"
@@ -60,19 +54,19 @@ Gracias por confiar en Home Security.
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=10)
         if response.status_code in [200, 201, 202]:
-            print(f"✅ Correo de cita enviado correctamente vía API a {receptor}", file=sys.stderr)
+            print(f"✅ Correo de cita enviado correctamente vía API a {receptor}", file=sys.stderr, flush=True)
             return True
         else:
-            print(f"❌ Brevo rechazó la notificación ({response.status_code}): {response.text}", file=sys.stderr)
+            print(f"❌ Brevo rechazó la notificación ({response.status_code}): {response.text}", file=sys.stderr, flush=True)
             return False
     except Exception as e:
-        print(f"❌ Error de red en la API de Brevo al gestionar cita: {str(e)}", file=sys.stderr)
+        print(f"❌ Error de red en la API de Brevo al gestionar cita: {str(e)}", file=sys.stderr, flush=True)
         return False
 
 
-# =====================================
-# DASHBOARD
-# =====================================
+# ==============================================================================
+# VISTA PRINCIPAL DEL DASHBOARD
+# ==============================================================================
 @dashboard_citas.route("/")
 def dashboard():
     conn = get_connection()
@@ -94,7 +88,6 @@ def dashboard():
     """)
 
     citas = cursor.fetchall()
-
     cursor.close()
     conn.close()
 
@@ -104,17 +97,16 @@ def dashboard():
     )
 
 
-# =====================================
-# ACTUALIZAR CITA + CORREO
-# =====================================
-
+# ==============================================================================
+# RUTA PARA ACTUALIZAR ESTADO Y ENVIAR NOTIFICACIÓN
+# ==============================================================================
 @dashboard_citas.route("/actualizar/<int:id>", methods=["POST"])
 def actualizar_cita(id):
     estado = request.form["estado"]
     recomendaciones = request.form["recomendaciones"]
     correo = request.form["correo"]
 
-    # 1. Persistencia de la actualización en base de datos (Railway)
+    # 1. Guardar la actualización en la base de datos
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -126,45 +118,17 @@ def actualizar_cita(id):
     """, (estado, recomendaciones, id))
 
     conn.commit()
-
-
     cursor.close()
     conn.close()
 
-    # ===== ENVIAR CORREO =====
-    try:
-        msg = Message(
-            subject="Actualización de tu cita - Home Security",
-            recipients=[correo]
-        )
+    # 2. Despacho inmediato mediante API HTTP de Brevo
+    print(f"--> [CITAS] Procesando actualización de cita {id}. Notificando a {correo}...", file=sys.stderr, flush=True)
+    
+    envio_exitoso = notificar_cambio_cita_api(correo, estado, recomendaciones)
 
-        msg.body = f"""
-Hola 👋
+    if envio_exitoso:
+        flash("✅ Cita actualizada y notificada por correo con éxito.", "success")
+    else:
+        flash("⚠️ Cita actualizada en el sistema, pero la notificación por correo falló.", "warning")
 
-Tu cita ha sido actualizada.
-
-Estado: {estado}
-
-Recomendaciones del agente:
-{recomendaciones}
-
-Gracias por confiar en Home Security.
-        """
-
-        mail.send(msg)
-
-    except Exception as e:
-        print("❌ Error enviando correo:", e)
-
-    flash("✅ Cita actualizada y notificada por correo", "success")
-
-    return redirect(url_for("dashboard_citas.dashboard"))
-    cursor.close()
-    conn.close()
-
-    # 2. Despacho inmediato mediante API HTTP (Inmune a firewalls)
-    print(f"--> [CITAS] Procesando actualización de cita {id}. Notificando a {correo}...", file=sys.stderr)
-    notificar_cambio_cita_api(correo, estado, recomendaciones)
-
-    flash("✅ Cita actualizada y notificada por correo", "success")
     return redirect(url_for("dashboard_citas.dashboard"))
