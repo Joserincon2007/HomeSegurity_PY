@@ -239,48 +239,48 @@
                         </td>
                     </tr>
 
-                    <div class="modal fade" id="modalCita{{ avaluo.id_avaluo }}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <form action="{{ url_for('avaluos.confirmar_cita', id_avaluo=avaluo.id_avaluo) }}" method="POST">
-                                <div class="modal-content">
-                                    <div class="modal-header border-bottom-0">
-                                        <h5 class="modal-title text-info"><i class="fas fa-clock"></i> Asignar Cita Física</h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p class="small text-muted mb-3">Inmueble: {{ vivienda.direccion or avaluo.localidad }} ({{ avaluo.area_m2 }} m²)</p>
-                                        
-                                        <div class="mb-3">
-                                            <label class="form-label">Fecha y Hora de Inspección</label>
-                                            <input type="datetime-local" class="form-control fecha-cita-input" required>
-                                            <div class="text-danger small mt-1 error-msg" style="display:none;">
-                                                Las citas se programan exclusivamente en la franja matutina: de 6:00 AM a 8:59 AM (hoy o fechas futuras).
-                                            </div>
-                                        </div>
+<div class="modal fade" id="modalCita{{ avaluo.id_avaluo }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ url_for('avaluos.confirmar_cita', id_avaluo=avaluo.id_avaluo) }}" method="POST">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title text-info"><i class="fas fa-clock"></i> Asignar Cita Física</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Inmueble: {{ vivienda.direccion or avaluo.localidad }} ({{ avaluo.area_m2 }} m²)</p>
 
-                                        <input type="hidden" name="fecha_cita" class="hidden-fecha">
-                                        <input type="hidden" name="hora_cita" class="hidden-hora">
+<div class="mb-3">
+    <label class="form-label">Fecha y Hora de Inspección</label>
+    <input type="datetime-local" name="fecha_inspeccion" class="form-control fecha-cita-input" required>
+    <div class="text-danger small mt-1 error-msg" style="display:none;">
+        Las citas se programan exclusivamente en la franja matutina: de 6:00 AM a 8:59 AM (hoy o fechas futuras).
+    </div>
+</div>
+                    <input type="hidden" name="fecha_cita" class="hidden-fecha">
+                    <input type="hidden" name="hora_cita" class="hidden-hora">
 
-                                        <div class="mb-3">
+                    <div class="mb-3">
 <label for="id_perito" class="form-label text-white">Perito Técnico Responsable</label>
 <select name="id_perito" class="form-select" required>
     <option value="" disabled selected>-- Seleccione un Perito Integrado --</option>
-    
-    {% for perito in peritos_disponibles %}
-        <option value="{{ perito.id_perito }}">
-            ID Perito: {{ perito.id_perito }} - {{ perito.primerNombre }} {{ perito.primerApellido }}
-        </option>
-    {% endfor %}
-</select>                                    </div>
-                                    <div class="modal-footer border-top-0">
-                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                        <button type="submit" class="btn btn-schedule">Guardar y Enviar Correo</button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+{% for perito in peritos_disponibles %}
+    <option value="{{ perito.id_perito }}">
+        ID Perito: {{ perito.id_perito }} - {{ perito.primerNombre }} {{ perito.primerApellido }}
+    </option>
+{% endfor %}    
+</select>                    </div>
+                </div>
 
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-schedule">Guardar y Enviar Correo</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
                     <div class="modal fade" id="modalValor{{ avaluo.id_avaluo }}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog">
                             <form action="{{ url_for('avaluos.editar_avaluo', id=avaluo.id_avaluo) }}" method="POST">
@@ -359,46 +359,58 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const ahora = new Date();
-        const offset = ahora.getTimezoneOffset() * 60000;
-        const horaLocal = new Date(ahora - offset);
-        const hoyISO = horaLocal.toISOString().slice(0, 16);
+document.addEventListener("DOMContentLoaded", function() {
+    const ahora = new Date();
+    const offset = ahora.getTimezoneOffset() * 60000;
+    const horaLocal = new Date(ahora - offset);
+    const hoyISO = horaLocal.toISOString().slice(0, 16);
 
-        const inputsFecha = document.querySelectorAll('.fecha-cita-input');
+    const inputsFecha = document.querySelectorAll('.fecha-cita-input');
 
-        inputsFecha.forEach(input => {
-            input.min = hoyISO;
+    inputsFecha.forEach(input => {
+        // Establecer fecha mínima dinámicamente (Hoy en adelante)
+        input.min = hoyISO;
 
-            input.addEventListener('change', function() {
-                const modalBody = this.closest('.modal-body');
-                const errorContainer = modalBody.querySelector('.error-msg');
-                const form = this.closest('form');
-                
-                if (!this.value) return;
+        input.addEventListener('change', function() {
+            const modalBody = this.closest('.modal-body');
+            const errorContainer = modalBody.querySelector('.error-msg');
 
-                const fechaSeleccionada = new Date(this.value);
-                const hora = fechaSeleccionada.getHours();
-                
-                // Validación de franja horaria colombiana (6:00 AM - 8:59 AM)
-                if (hora < 6 || hora >= 9) {
-                    errorContainer.style.display = 'block';
-                    this.value = '';
-                    this.classList.add('is-invalid');
-                } else {
-                    errorContainer.style.display = 'none';
-                    this.classList.remove('is-invalid');
-                    this.classList.add('is-valid');
+            if (!this.value) return;
 
-                    const partes = this.value.split('T'); 
-                    if(partes.length === 2) {
-                        form.querySelector('.hidden-fecha').value = partes[0];
-                        form.querySelector('.hidden-hora').value = partes[1];
-                    }
-                }
-            });
+            const fechaSeleccionada = new Date(this.value);
+            const hora = fechaSeleccionada.getHours();
+
+            // Validación estricta de la franja horaria colombiana (6:00 AM - 8:59 AM)
+            if (hora < 6 || hora >= 9) {
+                if (errorContainer) errorContainer.style.display = 'block';
+                this.value = '';
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            } else {
+                if (errorContainer) errorContainer.style.display = 'none';
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
         });
     });
+
+    // Control del Submit libre de inputs ocultos del pasado
+    const formularios = document.querySelectorAll('form');
+    formularios.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const inputVisible = this.querySelector('.fecha-cita-input');
+            const selectPerito = this.querySelector('select[name="id_perito"]');
+
+            // Solo mostramos logs de control en la consola de F12 antes de viajar al backend
+            console.log("🚀 Enviando formulario de manera nativa...", {
+                fecha_inspeccion: inputVisible ? inputVisible.value : "No encontrado",
+                id_perito: selectPerito ? selectPerito.value : "No seleccionado"
+            });
+            
+            // Permitimos el envío nativo sin e.preventDefault()
+        });
+    });
+});
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

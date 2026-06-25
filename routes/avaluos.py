@@ -185,51 +185,80 @@ def dashboard_perito():
         Vivienda, Avaluo.id_vivienda == Vivienda.id_vivienda
     ).all()
     
-    peritos = Perito.query.all()
-    
+    peritos = Perito.query.all()    
     # 🔍 PRINT DE CONTROL: Mira tu terminal de Flask cuando cargues la página
     print("DEBUG PERITOS ENCONTRADOS:", peritos)
     
     return render_template("dashboard/dashboard_perito.html", avaluos=avaluos_con_vivienda, peritos_disponibles=peritos)
 
+from datetime import datetime
 
 @avaluos.route("/confirmar_cita/<int:id_avaluo>", methods=["POST"])
-@perito_required
+@perito_required  # Tu decorador de seguridad existente
 def confirmar_cita(id_avaluo):
+    # 1. Buscar el avalúo actual o lanzar 404 si no existe
     avaluo = Avaluo.query.get_or_404(id_avaluo)
-    vivienda = Vivienda.query.get(avaluo.id_vivienda)
-    
-    fecha_cita = request.form.get("fecha_cita")
-    hora_cita = request.form.get("hora_cita")
-    id_perito_raw = request.form.get("id_perito")
-    
-    correo_destino = str(avaluo.correo).strip()
-    nombre_cliente = str(avaluo.solicitante).strip()
 
-    if not fecha_cita or not hora_cita or not id_perito_raw:
-        flash("Faltan campos obligatorios para agendar la cita.", "danger")
+    # 2. Recibir los datos crudos del formulario (datetime-local y select)
+    fecha_inspeccion_raw = request.form.get("fecha_inspeccion")
+    id_perito_raw = request.form.get("id_perito")
+
+    # Validación estricta de campos obligatorios
+    if not fecha_inspeccion_raw or not id_perito_raw:
+        flash("Faltan campos obligatorios para agendar.", "danger")
         return redirect(url_for('avaluos.dashboard_perito'))
 
     try:
-        # 1. Asignación de datos y cambio de estado a 'Asignada'
+        # 3. Convertir la cadena unificada del navegador ("YYYY-MM-DDTHH:MM") a objetos de Python
+        if len(fecha_inspeccion_raw) > 16:
+            dt_objeto = datetime.strptime(fecha_inspeccion_raw, "%Y-%m-%dT%H:%M:%S")
+        else:
+            dt_objeto = datetime.strptime(fecha_inspeccion_raw, "%Y-%m-%dT%H:%M")
+
+        fecha_cita = dt_objeto.date()
+        hora_cita = dt_objeto.time()
+
+        # 4. Actualizar las columnas del modelo Avaluo
         avaluo.id_perito = int(id_perito_raw)
-        avaluo.fecha_cita = fecha_cita  # Guarda la fecha seleccionada
-        avaluo.hora_cita = hora_cita    # Guarda la hora seleccionada
-        avaluo.estado = 'Asignada'      # <-- Estado solicitado cambiado aquí
-        
+        avaluo.fecha_cita = fecha_cita
+        avaluo.hora_cita = hora_cita
+        avaluo.estado = 'Asignada'  
+
+        # 5. Confirmar los cambios en la Base de Datos primero
         db.session.commit()
 
-        # 2. Envío de correo (Brevo)
+        # 6. Consultas directas a los modelos para evitar problemas de relaciones huérfanas
+        # Ajusta los nombres de las importaciones según la estructura de tus carpetas
+        from models.vivienda import Vivienda  
+        from models.usuarios import Usuario
+
+        # Buscamos usando las llaves foráneas asignadas al avalúo
+        # (Si en tu BD usan CamelCase como idVivienda o idUsuario, cámbialos aquí)
+        vivienda = Vivienda.query.get(avaluo.id_vivienda)
+        usuario_cliente = Usuario.query.get(avaluo.id_usuario)
+
+        # Extraer datos de contacto de forma segura
+        nombre_cliente = usuario_cliente.primerNombre if usuario_cliente else "Cliente"
+        correo_destino = usuario_cliente.correo if usuario_cliente else None
+
+        if not correo_destino:
+            raise Exception("El avalúo no tiene un usuario con un correo electrónico válido asociado.")
+
+        # ====================================================================
+        # BLOQUE DE ENVÍO POR BREVO RE-ESTRUCTURADO SIN ERRORES DE SINTAXIS
+        # ====================================================================
         try:
             pdf_adjunto = generar_pdf(avaluo, vivienda)
-            cuerpo_correo = (
-                f"Hola {nombre_cliente},\n\n"
-                f"Su cita para la inspección física de su inmueble ha sido asignada con éxito.\n\n"
-                f"Detalles de la visita:\n"
-                f"📅 Fecha: {fecha_cita}\n"
-                f"⏰ Hora: {hora_cita}\n\n"
-                f"Por favor, recuerde contar con los documentos originales de la propiedad a la mano."
-            )
+            
+            cuerpo_correo = f"""Hola {nombre_cliente},
+
+Su cita para la inspección física de su inmueble ha sido asignada con éxito.
+
+Detalles de la visita:
+📅 Fecha: {fecha_cita}
+⏰ Hora: {hora_cita}
+
+Por favor, recuerde contar con los documentos originales de la propiedad a la mano."""
 
             enviar_correo_api_brevo(
                 receptor=correo_destino,
@@ -241,16 +270,18 @@ def confirmar_cita(id_avaluo):
             flash(f"Cita asignada para el {fecha_cita} a las {hora_cita}.", "success")
             
         except Exception as e_mail:
-            print(f"⚠️ Alerta: Guardado en DB pero el correo falló: {str(e_mail)}")
-            flash(f"Cita registrada como Asignada, pero falló el envío del correo.", "warning")
-
+            import traceback
+            print("❌ ERROR CRÍTICO AL ENVIAR CORREO CON BREVO:")
+            traceback.print_exc()  # Ahora sí imprimirá el error real en los logs
+            flash("Cita registrada como Asignada, pero falló el envío del correo.", "warning")
+        # ====================================================================
     except Exception as e:
+        # Si algo falla antes del commit del flujo general, deshacemos cambios
         db.session.rollback()
         print(f"❌ ERROR EN CONFIRMAR_CITA: {str(e)}")
         flash(f"Error en la base de datos al asignar la cita: {str(e)}", "danger")
 
     return redirect(url_for('avaluos.dashboard_perito'))
-
 
 @avaluos.route("/sincronizar_peritos")
 @perito_required
