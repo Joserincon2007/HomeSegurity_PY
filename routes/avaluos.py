@@ -184,7 +184,13 @@ def dashboard_perito():
     avaluos_con_vivienda = db.session.query(Avaluo, Vivienda).join(
         Vivienda, Avaluo.id_vivienda == Vivienda.id_vivienda
     ).all()
-    return render_template("dashboard/dashboard_perito.html", avaluos=avaluos_con_vivienda)
+    
+    peritos = Perito.query.all()
+    
+    # 🔍 PRINT DE CONTROL: Mira tu terminal de Flask cuando cargues la página
+    print("DEBUG PERITOS ENCONTRADOS:", peritos)
+    
+    return render_template("dashboard/dashboard_perito.html", avaluos=avaluos_con_vivienda, peritos_disponibles=peritos)
 
 
 @avaluos.route("/confirmar_cita/<int:id_avaluo>", methods=["POST"])
@@ -200,30 +206,25 @@ def confirmar_cita(id_avaluo):
     correo_destino = str(avaluo.correo).strip()
     nombre_cliente = str(avaluo.solicitante).strip()
 
-    # Validación básica en backend
     if not fecha_cita or not hora_cita or not id_perito_raw:
-        flash("Faltan campos obligatorios para agendar la cita (Fecha, Hora o Perito).", "danger")
+        flash("Faltan campos obligatorios para agendar la cita.", "danger")
         return redirect(url_for('avaluos.dashboard_perito'))
 
     try:
-        # CRÍTICO: Convertir el id_perito a entero para que MySQL no rechace la llave foránea
-        id_perito_int = int(id_perito_raw)
+        # 1. Asignación de datos y cambio de estado a 'Asignada'
+        avaluo.id_perito = int(id_perito_raw)
+        avaluo.fecha_cita = fecha_cita  # Guarda la fecha seleccionada
+        avaluo.hora_cita = hora_cita    # Guarda la hora seleccionada
+        avaluo.estado = 'Asignada'      # <-- Estado solicitado cambiado aquí
         
-        # 1. Actualizamos los campos en el objeto de la base de datos
-        avaluo.id_perito = id_perito_int
-        avaluo.fecha_cita = fecha_cita
-        avaluo.hora_cita = hora_cita
-        avaluo.estado = 'Agendado'  # <-- Cambiamos el estado de manera explícita
-        
-        # 2. Confirmar primero los cambios en la Base de Datos
         db.session.commit()
 
-        # 3. Intentar enviar el correo DESPUÉS de guardar con éxito en la DB
+        # 2. Envío de correo (Brevo)
         try:
             pdf_adjunto = generar_pdf(avaluo, vivienda)
             cuerpo_correo = (
                 f"Hola {nombre_cliente},\n\n"
-                f"Su cita para la inspección física de su inmueble ha sido agendada con éxito.\n\n"
+                f"Su cita para la inspección física de su inmueble ha sido asignada con éxito.\n\n"
                 f"Detalles de la visita:\n"
                 f"📅 Fecha: {fecha_cita}\n"
                 f"⏰ Hora: {hora_cita}\n\n"
@@ -232,23 +233,21 @@ def confirmar_cita(id_avaluo):
 
             enviar_correo_api_brevo(
                 receptor=correo_destino,
-                asunto="CONFIRMACIÓN: Cita de Inspección y Requisitos - Home Security",
+                asunto="CONFIRMACIÓN: Cita de Inspección - Home Security",
                 cuerpo=cuerpo_correo,
                 adjunto_bytes=pdf_adjunto,
-                nombre_adjunto="Inspeccion_Agendada.pdf"
+                nombre_adjunto="Inspeccion_Asignada.pdf"
             )
-            flash(f"Cita agendada para el {fecha_cita} a las {hora_cita}. Notificación enviada a {correo_destino}.", "success")
+            flash(f"Cita asignada para el {fecha_cita} a las {hora_cita}.", "success")
             
         except Exception as e_mail:
-            # Si el correo falla, al menos el estado ya cambió en la base de datos
-            print(f"⚠️ Alerta: El avalúo se guardó pero el correo falló: {str(e_mail)}")
-            flash(f"Cita agendada en el sistema, pero no se pudo enviar el correo de notificación.", "warning")
+            print(f"⚠️ Alerta: Guardado en DB pero el correo falló: {str(e_mail)}")
+            flash(f"Cita registrada como Asignada, pero falló el envío del correo.", "warning")
 
     except Exception as e:
         db.session.rollback()
-        # IMPRESCINDIBLE: Imprimir el error exacto en tu consola de Railway o terminal de Python
-        print(f"❌ ERROR CRÍTICO EN CONFIRMAR_CITA: {str(e)}")
-        flash(f"Error al procesar la confirmación en la base de datos: {str(e)}", "danger")
+        print(f"❌ ERROR EN CONFIRMAR_CITA: {str(e)}")
+        flash(f"Error en la base de datos al asignar la cita: {str(e)}", "danger")
 
     return redirect(url_for('avaluos.dashboard_perito'))
 
@@ -257,22 +256,19 @@ def confirmar_cita(id_avaluo):
 @perito_required
 def sincronizar_peritos():
     try:
-        # 1. Traer todos los usuarios cuyo rol sea 'PERITO'
         usuarios_peritos = Usuario.query.filter_by(rol='PERITO').all()
         contador = 0
         
         for u in usuarios_peritos:
-            # 2. Validar usando 'idUsuario' (tal como está en tu DB) si ya existe en perito
             existe = Perito.query.filter_by(idUsuario=u.idUsuario).first()
             
             if not existe:
-                # 3. Crear el registro mapeando los datos dinámicamente
                 nuevo_perito = Perito(
                     idUsuario=u.idUsuario,
-                    primerNombre=u.usuario,       # Ajusta según el campo exacto de tu modelo Usuario (ej: u.primer_nombre o u.usuario)
-                    primerApellido=u.apellido,    # Ajusta según tu campo exacto en Usuario
+                    primerNombre=u.usuario,       
+                    primerApellido=u.apellido,    
                     correo=u.correo,
-                    edad=None                     # Lo dejamos NULL para que lo editen después o lo calcules si tienes fecha_nacimiento
+                    edad=None                    
                 )
                 db.session.add(nuevo_perito)
                 contador += 1

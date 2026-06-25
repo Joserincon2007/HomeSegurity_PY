@@ -232,9 +232,6 @@
                                 <button class="btn text-white" style="background-color: var(--dark-navy);" type="button" data-bs-toggle="collapse" data-bs-target="#detail-{{ a.id_avaluo }}" aria-expanded="false">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <a href="{{ url_for('avaluos.editar_avaluo', id=a.id_avaluo) }}" class="btn btn-warning">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
                                 <a href="{{ url_for('avaluos.eliminar_avaluo', id=a.id_avaluo) }}" class="btn btn-danger" onclick="return confirm('¿Está seguro de que desea eliminar permanentemente este avalúo técnico del sistema?')">
                                     <i class="bi bi-trash"></i>
                                 </a>

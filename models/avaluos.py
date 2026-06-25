@@ -2,44 +2,55 @@ from extensions import db
 from datetime import datetime
 
 class Avaluo(db.Model):
-    __tablename__ = "avaluo"
+    __tablename__ = 'avaluo'
 
-    id_avaluo = db.Column(db.Integer, primary_key=True)
-    id_vivienda = db.Column(db.Integer, db.ForeignKey("vivienda.id_vivienda"), nullable=False)
-    id_usuario = db.Column(db.Integer, nullable=True) 
-    
-    # CORRECCIÓN 1: Agregar explícitamente la llave foránea a la tabla perito
-    id_perito = db.Column(db.Integer, db.ForeignKey("perito.id_perito"), nullable=True)  
+    # Llaves Primarias y Foráneas (Todas mapeadas como BigInteger según tu tabla)
+    id_avaluo = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    id_vivienda = db.Column(db.BigInteger, db.ForeignKey('vivienda.id_vivienda', ondelete='CASCADE'), nullable=False)
+    id_usuario = db.Column(db.BigInteger, db.ForeignKey('usuario.idUsuario', ondelete='SET NULL'), nullable=True)
+    id_perito = db.Column(db.BigInteger, db.ForeignKey('perito.id_perito', ondelete='SET NULL'), nullable=True)
 
-    # CORRECCIÓN 2: Crear la relación para acceder a los datos de la Imagen 1
-    # Esto permite que en el HTML hagas a.perito.formacion_academica
-    perito = db.relationship("Perito", backref="avaluos_asociados")
-
-    solicitante = db.Column(db.String(100), nullable=False)
-    correo = db.Column(db.String(100), nullable=False)
-    area_m2 = db.Column(db.Float, nullable=False)
+    # Campos de texto (varstring -> String)
+    area_m2 = db.Column(db.String(100), nullable=False)
     localidad = db.Column(db.String(100), nullable=False)
-    precio_m2 = db.Column(db.Float, nullable=False)
-    valor_total = db.Column(db.Float, nullable=False) 
-    antiguedad = db.Column(db.String(50))
-    estrato = db.Column(db.Integer)
-    parqueadero = db.Column(db.Integer) # Nombre en la DB
-    descripcion = db.Column(db.Text)
-    fecha = db.Column(db.DateTime, default=datetime.now)
+    precio_m2 = db.Column(db.String(100), nullable=True)
+    valor_total = db.Column(db.String(100), nullable=False)
+    solicitante = db.Column(db.String(150), nullable=False)
+    correo = db.Column(db.String(150), nullable=False)
+    estado = db.Column(db.String(100), default='Pendiente')
+    valor_final = db.Column(db.String(100), nullable=True)
 
-    def __init__(self, id_vivienda, solicitante, correo, area_m2, localidad, precio_m2, valor_total, 
-                 antiguedad, estrato, parqueadero, descripcion, id_usuario=None, id_perito=None, fecha=None):
+    # Campos Numéricos y Booleanos
+    antiguedad = db.Column(db.Integer, nullable=True)   # mediumint
+    estrato = db.Column(db.Integer, nullable=False)      # mediumint
+    parqueadero = db.Column(db.Boolean, default=False)  # tinyint (boolean)
+
+    # Blobs y Textos largos
+    descripcion = db.Column(db.Text, nullable=True)     # blob/text
+
+    # Fechas y Tiempos
+    fecha = db.Column(db.DateTime, default=datetime.utcnow) # timestamp
+    fecha_cita = db.Column(db.Date, nullable=True)          # date
+    hora_cita = db.Column(db.String(50), nullable=True)     # varstring
+    fecha_actualizacion = db.Column(db.DateTime, onupdate=datetime.utcnow, nullable=True)
+
+    def __init__(self, id_vivienda, solicitante, correo, estrato, localidad, area_m2, valor_total, 
+                 id_usuario=None, id_perito=None, precio_m2=None, antiguedad=None, parqueadero=False, 
+                 descripcion=None, estado='Pendiente', fecha_cita=None, hora_cita=None, valor_final=None):
         self.id_vivienda = id_vivienda
-        self.solicitante = solicitante
-        self.correo = correo
         self.id_usuario = id_usuario
         self.id_perito = id_perito
-        self.area_m2 = area_m2
+        self.area_m2 = str(area_m2)
         self.localidad = localidad
-        self.precio_m2 = precio_m2
-        self.valor_total = valor_total
+        self.precio_m2 = str(precio_m2) if precio_m2 else None
+        self.valor_total = str(valor_total)
         self.antiguedad = antiguedad
         self.estrato = estrato
-        self.parqueadero = parqueadero # Corregido para que coincida con la columna
+        self.parqueadero = parqueadero
         self.descripcion = descripcion
-        self.fecha = fecha if fecha else datetime.now()
+        self.solicitante = solicitante
+        self.correo = correo
+        self.estado = estado
+        self.fecha_cita = fecha_cita
+        self.hora_cita = hora_cita
+        self.valor_final = str(valor_final) if valor_final else None

@@ -93,12 +93,12 @@
             color: var(--silver);
         }
 
-        .form-control {
+        .form-control, .form-select {
             background: #1d2d50;
             border: 1px solid var(--soft-blue);
             color: white;
         }
-        .form-control:focus {
+        .form-control:focus, .form-select:focus {
             background: #1d2d50;
             color: white;
             border-color: var(--cyan);
@@ -217,17 +217,30 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if avaluo.estado == 'Pendiente' or not avaluo.estado %}
-                                <button class="btn btn-sm btn-schedule" data-bs-toggle="modal" data-bs-target="#modalCita{{ avaluo.id_avaluo }}">
-                                    <i class="fas fa-calendar-plus"></i> Agendar Cita
-                                </button>
-                            {% elif avaluo.estado == 'Agendado' %}
-                                <button class="btn btn-sm btn-final" data-bs-toggle="modal" data-bs-target="#modalValor{{ avaluo.id_avaluo }}">
-                                    <i class="fas fa-gavel"></i> Cierre Pericial
-                                </button>
-                            {% else %}
-                                <span class="text-success small fw-bold"><i class="fas fa-check-double"></i> Concluido</span>
-                            {% endif %}
+                            <div class="d-flex gap-2">
+                                {% if avaluo.estado == 'Pendiente' or not avaluo.estado %}
+                                    <button class="btn btn-sm btn-schedule" data-bs-toggle="modal" data-bs-target="#modalCita{{ avaluo.id_avaluo }}">
+                                        <i class="fas fa-calendar-plus"></i> Agendar Cita
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditarGenerico{{ avaluo.id_avaluo }}" title="Editar datos básicos">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                {% elif avaluo.estado == 'Agendado' %}
+                                    <button class="btn btn-sm btn-final" data-bs-toggle="modal" data-bs-target="#modalValor{{ avaluo.id_avaluo }}">
+                                        <i class="fas fa-gavel"></i> Cierre Pericial
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalValor{{ avaluo.id_avaluo }}" title="Corregir Tasación">
+                                        <i class="fas fa-pen-fancy"></i> Corregir
+                                    </button>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('avaluos.eliminar_avaluo', id=avaluo.id_avaluo) }}" 
+                                   class="btn btn-sm btn-outline-danger" 
+                                   onclick="return confirm('¿Estás completamente seguro de que deseas eliminar permanentemente este avalúo? Esta acción no se puede deshacer.');" title="Eliminar avalúo">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
 
@@ -254,10 +267,16 @@
                                         <input type="hidden" name="hora_cita" class="hidden-hora">
 
                                         <div class="mb-3">
-                                            <label class="form-label">ID Técnico del Perito Asignado</label>
-                                            <input type="number" name="id_perito" class="form-control" placeholder="Ingrese el id_perito correspondiente" required>
-                                        </div>
-                                    </div>
+<label for="id_perito" class="form-label text-white">Perito Técnico Responsable</label>
+<select name="id_perito" class="form-select" required>
+    <option value="" disabled selected>-- Seleccione un Perito Integrado --</option>
+    
+    {% for perito in peritos_disponibles %}
+        <option value="{{ perito.id_perito }}">
+            ID Perito: {{ perito.id_perito }} - {{ perito.primerNombre }} {{ perito.primerApellido }}
+        </option>
+    {% endfor %}
+</select>                                    </div>
                                     <div class="modal-footer border-top-0">
                                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                                         <button type="submit" class="btn btn-schedule">Guardar y Enviar Correo</button>
@@ -283,7 +302,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label">Valor Final Determinado ($ COP)</label>
-                                            <input type="number" step="0.01" name="valor_final" class="form-control" placeholder="Ej: 210000000" required>
+                                            <input type="number" step="0.01" name="valor_final" class="form-control" value="{{ avaluo.valor_final if avaluo.valor_final else '' }}" placeholder="Ej: 210000000" required>
                                         </div>
                                         
                                         <div class="mb-3">
@@ -300,13 +319,43 @@
                         </div>
                     </div>
 
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-5">
-                            <i class="fas fa-folder-open mb-2 fs-3"></i>
-                            <p class="mb-0">No existen solicitudes de avalúos pendientes en la base de datos.</p>
-                        </td>
-                    </tr>
+                    <div class="modal fade" id="modalEditarGenerico{{ avaluo.id_avaluo }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <form action="{{ url_for('avaluos.editar_avaluo', id=avaluo.id_avaluo) }}" method="POST">
+                                <div class="modal-content">
+                                    <div class="modal-header border-bottom-0">
+                                        <h5 class="modal-title text-warning"><i class="fas fa-edit"></i> Modificar Datos del Avalúo #{{ avaluo.id_avaluo }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nombre del Solicitante</label>
+                                            <input type="text" name="solicitante" class="form-control" value="{{ avaluo.solicitante }}" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Valor Preliminar Calculado ($ COP)</label>
+                                            <input type="number" step="0.01" name="valor_total" class="form-control" value="{{ avaluo.valor_total }}" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Notas / Observaciones Iniciales</label>
+                                            <textarea name="descripcion" class="form-control" rows="3" placeholder="Añadir detalles adicionales del caso...">{{ avaluo.descripcion }}</textarea>
+                                        </div>
+                                        
+                                        {% if avaluo.valor_final %}
+                                            <input type="hidden" name="valor_final" value="{{ avaluo.valor_final }}">
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer border-top-0">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-warning text-dark fw-bold">Actualizar Datos</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                     {% endfor %}
                 </tbody>
             </table>
@@ -336,7 +385,7 @@
                 const fechaSeleccionada = new Date(this.value);
                 const hora = fechaSeleccionada.getHours();
                 
-                // Validación estricta de franja horaria colombiana (6:00 AM - 8:59 AM)
+                // Validación de franja horaria colombiana (6:00 AM - 8:59 AM)
                 if (hora < 6 || hora >= 9) {
                     errorContainer.style.display = 'block';
                     this.value = '';
@@ -346,7 +395,6 @@
                     this.classList.remove('is-invalid');
                     this.classList.add('is-valid');
 
-                    // Desglose limpio para los request.form del archivo de Flask
                     const partes = this.value.split('T'); 
                     if(partes.length === 2) {
                         form.querySelector('.hidden-fecha').value = partes[0];
