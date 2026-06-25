@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Perito | homeSegurity</title>
+    <title>Panel Perito | HomeSecurity</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -21,7 +21,7 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* --- NUEVO MENÚ DE NAVEGACIÓN --- */
+        /* --- MENÚ DE NAVEGACIÓN --- */
         .navbar-custom {
             background: var(--navy);
             border-bottom: 2px solid var(--cyan);
@@ -61,6 +61,32 @@
             box-shadow: 0 0 15px rgba(100, 255, 218, 0.4);
         }
 
+        .btn-final {
+            background: transparent;
+            color: #38bdf8;
+            border: 1px solid #38bdf8;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .btn-final:hover {
+            background: #38bdf8;
+            color: var(--midnight);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-sync {
+            background: transparent;
+            color: #ffc107;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .btn-sync:hover {
+            background: #ffc107;
+            color: var(--midnight);
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+        }
+
         .modal-content {
             background: var(--navy);
             border: 1px solid var(--cyan);
@@ -72,112 +98,215 @@
             border: 1px solid var(--soft-blue);
             color: white;
         }
+        .form-control:focus {
+            background: #1d2d50;
+            color: white;
+            border-color: var(--cyan);
+            box-shadow: 0 0 8px rgba(100, 255, 218, 0.2);
+        }
         
-        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
     <div class="container">
-        <a class="navbar-brand text-info fw-bold" href="#">HOME SEGURITY</a>
-        <div class="collapse navbar-collapse">
-        <div class="nav-end">
-        {% if session.usuario %}
-            <span class="text-light me-2">
-              Bienvenido Prito  👤 {{ session.usuario }} {{ session.apellido }}
-            </span>
-        {% endif %}
-    </div>
+        <a class="navbar-brand text-info fw-bold" href="#">HOME SECURITY</a>
+        <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('avaluos.dashboard_perito') }}">Dashboard</a>
+                    <a class="nav-link active" href="{{ url_for('avaluos.dashboard_perito') }}">
+                        <i class="fas fa-chart-line me-1"></i> Dashboard Perito
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('avaluos.listar_perito') }}">Listar Avalúos</a>
+                    <a class="nav-link" href="{{ url_for('avaluos.crear_manual') }}">
+                        <i class="fas fa-plus-circle me-1 text-info"></i> Registro Manual
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.vista_cambiar_password') }}"> Cambiar contraseña</a>
+                    <a class="nav-link" href="{{ url_for('avaluos.listar_perito') }}">
+                        <i class="fas fa-list-alt me-1"></i> Mis Asignaciones
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.vista_cambiar_password') if (url_for('admin.vista_cambiar_password')|string != '') else '#' }}">
+                        <i class="fas fa-key me-1"></i> Cambiar contraseña
+                    </a>
                 </li>
             </ul>
-            <div class="d-flex">
+            <div class="d-flex align-items-center gap-3">
+                {% if session.usuario %}
+                    <span class="text-light small">
+                        👤 Perito: {{ session.usuario }} {{ session.apellido }} ({{ session.rol }})
+                    </span>
+                {% endif %}
                 <a href="{{ url_for('auth.login') }}" class="btn btn-outline-danger btn-sm">Cerrar Sesión</a>
             </div>
         </div>
     </div>
 </nav>
 
-<div class="container">
+<div class="container mb-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show mt-3" role="alert" style="background-color: var(--navy); color: white; border-color: var(--soft-blue);">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <div class="card-admin">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-user-shield"></i> Dashboard Perito</h2>
-            <span class="text-muted">Gestión de Citas Técnicas</span>
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+            <div>
+                <h2><i class="fas fa-user-shield"></i> Bandeja Global de Solicitudes</h2>
+                <span class="text-muted">Inspección de avalúos entrantes en Bogotá</span>
+            </div>
+            <a href="{{ url_for('avaluos.sincronizar_peritos') }}" class="btn btn-sync">
+                <i class="fas fa-sync-alt"></i> Sincronizar Peritos
+            </a>
         </div>
 
         <div class="table-responsive">
             <table class="table align-middle">
                 <thead>
                     <tr>
-                        <th>Solicitante</th>
-                        <th>Ubicación</th>
-                        <th>Valor Calc.</th>
+                        <th>Solicitante / Contacto</th>
+                        <th>Ubicación / Datos</th>
+                        <th>Valor Calculado</th>
+                        <th>Valor Cierre (Perito)</th>
                         <th>Estado</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {# Este bloque ahora funcionará si usas el .query(Avaluo, Vivienda) en Python #}
                     {% for avaluo, vivienda in avaluos %}
                     <tr>
                         <td>
                             <strong>{{ avaluo.solicitante }}</strong><br>
                             <small class="text-info">{{ avaluo.correo }}</small>
                         </td>
-                        <td>{{ vivienda.direccion }}<br><small>{{ avaluo.localidad }}</small></td>
-                        <td><span class="text-black">$ {{ "{:,.0f}".format(avaluo.valor_total) }}</span></td>
                         <td>
-                            {% if not avaluo.id_perito %}
-                                <span class="status-badge bg-warning text-dark">Pendiente</span>
+                            {{ vivienda.direccion or 'Dirección no registrada' }}<br>
+                            <small class="text-muted">Estrato {{ avaluo.estrato }} • {{ avaluo.localidad }}</small>
+                        </td>
+                        <td><span class="text-light fw-bold">$ {{ "{:,.0f}".format(avaluo.valor_total) }}</span></td>
+                        <td>
+                            {% if avaluo.valor_final %}
+                                <span class="fw-bold" style="color: var(--cyan);">$ {{ "{:,.0f}".format(avaluo.valor_final) }}</span>
                             {% else %}
-                                <span class="status-badge bg-success text-white">Programado</span>
+                                <span class="text-muted small italic">Pendiente visita</span>
                             {% endif %}
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-schedule" data-bs-toggle="modal" data-bs-target="#modal{{ avaluo.id_avaluo }}">
-                                <i class="fas fa-calendar-plus"></i> Agendar
-                            </button>
+                            {% if avaluo.estado == 'Pendiente' or not avaluo.estado %}
+                                <span class="status-badge bg-warning text-dark">Pendiente</span>
+                            {% elif avaluo.estado == 'Agendado' %}
+                                <span class="status-badge bg-primary text-white">Agendado</span>
+                            {% elif avaluo.estado == 'Finalizado' %}
+                                <span class="status-badge bg-success text-white">Finalizado</span>
+                            {% else %}
+                                <span class="status-badge bg-secondary text-white">{{ avaluo.estado }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if avaluo.estado == 'Pendiente' or not avaluo.estado %}
+                                <button class="btn btn-sm btn-schedule" data-bs-toggle="modal" data-bs-target="#modalCita{{ avaluo.id_avaluo }}">
+                                    <i class="fas fa-calendar-plus"></i> Agendar Cita
+                                </button>
+                            {% elif avaluo.estado == 'Agendado' %}
+                                <button class="btn btn-sm btn-final" data-bs-toggle="modal" data-bs-target="#modalValor{{ avaluo.id_avaluo }}">
+                                    <i class="fas fa-gavel"></i> Cierre Pericial
+                                </button>
+                            {% else %}
+                                <span class="text-success small fw-bold"><i class="fas fa-check-double"></i> Concluido</span>
+                            {% endif %}
                         </td>
                     </tr>
 
-                    <div class="modal fade" id="modal{{ avaluo.id_avaluo }}" tabindex="-1">
+                    <div class="modal fade" id="modalCita{{ avaluo.id_avaluo }}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog">
                             <form action="{{ url_for('avaluos.confirmar_cita', id_avaluo=avaluo.id_avaluo) }}" method="POST">
                                 <div class="modal-content">
                                     <div class="modal-header border-bottom-0">
-                                        <h5 class="modal-title">Programar Visita: {{ vivienda.direccion }}</h5>
+                                        <h5 class="modal-title text-info"><i class="fas fa-clock"></i> Asignar Cita Física</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-<div class="modal-body">
-    <div class="mb-3">
-        <label class="form-label">Fecha y Hora de Cita</label>
-        <input type="datetime-local" name="fecha_cita" id="fecha_cita" class="form-control" required>
-        <div id="error-msg" class="text-danger small mt-1" style="display:none;">
-            La cita debe ser hoy o en el futuro, entre las 6:00 AM y las 8:00 AM.
-        </div>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">ID del Perito Responsable</label>
-        <input type="number" name="id_perito" class="form-control" required>
-    </div>
-</div>
+                                    <div class="modal-body">
+                                        <p class="small text-muted mb-3">Inmueble: {{ vivienda.direccion or avaluo.localidad }} ({{ avaluo.area_m2 }} m²)</p>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Fecha y Hora de Inspección</label>
+                                            <input type="datetime-local" class="form-control fecha-cita-input" required>
+                                            <div class="text-danger small mt-1 error-msg" style="display:none;">
+                                                Las citas se programan exclusivamente en la franja matutina: de 6:00 AM a 8:59 AM (hoy o fechas futuras).
+                                            </div>
+                                        </div>
+
+                                        <input type="hidden" name="fecha_cita" class="hidden-fecha">
+                                        <input type="hidden" name="hora_cita" class="hidden-hora">
+
+                                        <div class="mb-3">
+                                            <label class="form-label">ID Técnico del Perito Asignado</label>
+                                            <input type="number" name="id_perito" class="form-control" placeholder="Ingrese el id_perito correspondiente" required>
+                                        </div>
                                     </div>
                                     <div class="modal-footer border-top-0">
-                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                        <button type="submit" class="btn btn-schedule">Confirmar y Enviar PDF</button>
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-schedule">Guardar y Enviar Correo</button>
                                     </div>
                                 </div>
                             </form>
                         </div>
                     </div>
+
+                    <div class="modal fade" id="modalValor{{ avaluo.id_avaluo }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <form action="{{ url_for('avaluos.editar_avaluo', id=avaluo.id_avaluo) }}" method="POST">
+                                <div class="modal-content">
+                                    <div class="modal-header border-bottom-0">
+                                        <h5 class="modal-title text-warning"><i class="fas fa-calculator"></i> Tasación Comercial Definitiva</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="small text-muted mb-3">Inmueble solicitado por: {{ avaluo.solicitante }}</p>
+                                        
+                                        <input type="hidden" name="solicitante" value="{{ avaluo.solicitante }}">
+                                        <input type="hidden" name="valor_total" value="{{ avaluo.valor_total }}">
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Valor Final Determinado ($ COP)</label>
+                                            <input type="number" step="0.01" name="valor_final" class="form-control" placeholder="Ej: 210000000" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Dictamen Técnico e Informe de Estructura</label>
+                                            <textarea name="descripcion" class="form-control" rows="4" placeholder="Escriba los pormenores, novedades y estado físico observado..." required>{{ avaluo.descripcion }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-top-0">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                        <button type="submit" class="btn btn-final">Concluir y Sellar Registro</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="fas fa-folder-open mb-2 fs-3"></i>
+                            <p class="mb-0">No existen solicitudes de avalúos pendientes en la base de datos.</p>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -186,31 +315,46 @@
 </div>
 
 <script>
-    const inputFecha = document.getElementById('fecha_cita');
-    const errorMsg = document.getElementById('error-msg');
+    document.addEventListener("DOMContentLoaded", function() {
+        const ahora = new Date();
+        const offset = ahora.getTimezoneOffset() * 60000;
+        const horaLocal = new Date(ahora - offset);
+        const hoyISO = horaLocal.toISOString().slice(0, 16);
 
-    // 1. Restringir que no se elijan días pasados (mínimo hoy)
-    const ahora = new Date();
-    // Formato ISO local: YYYY-MM-DDTHH:mm
-    const hoy = ahora.toISOString().slice(0, 16);
-    inputFecha.min = hoy;
+        const inputsFecha = document.querySelectorAll('.fecha-cita-input');
 
-    // 2. Validación de franja horaria (6 AM a 8 AM)
-    inputFecha.addEventListener('change', function() {
-        const fechaSeleccionada = new Date(this.value);
-        const hora = fechaSeleccionada.getHours();
-        
-        // Verificamos si está fuera del rango 6:00 a 8:59
-        // Si quieres que sea estrictamente HASTA las 8:00 (no 8:30), usa: (hora < 6 || hora >= 8)
-        if (hora < 6 || hora >= 8) {
-            errorMsg.style.display = 'block';
-            this.value = ''; // Limpia el input si es inválido
-            this.classList.add('is-invalid');
-        } else {
-            errorMsg.style.display = 'none';
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-        }
+        inputsFecha.forEach(input => {
+            input.min = hoyISO;
+
+            input.addEventListener('change', function() {
+                const modalBody = this.closest('.modal-body');
+                const errorContainer = modalBody.querySelector('.error-msg');
+                const form = this.closest('form');
+                
+                if (!this.value) return;
+
+                const fechaSeleccionada = new Date(this.value);
+                const hora = fechaSeleccionada.getHours();
+                
+                // Validación estricta de franja horaria colombiana (6:00 AM - 8:59 AM)
+                if (hora < 6 || hora >= 9) {
+                    errorContainer.style.display = 'block';
+                    this.value = '';
+                    this.classList.add('is-invalid');
+                } else {
+                    errorContainer.style.display = 'none';
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+
+                    // Desglose limpio para los request.form del archivo de Flask
+                    const partes = this.value.split('T'); 
+                    if(partes.length === 2) {
+                        form.querySelector('.hidden-fecha').value = partes[0];
+                        form.querySelector('.hidden-hora').value = partes[1];
+                    }
+                }
+            });
+        });
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

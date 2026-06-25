@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevo Avalúo - homeSegurity</title>
+    <title>Nuevo Avalúo - HomeSecurity</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -38,6 +38,18 @@
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-xl-10">
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
             <div class="card shadow-lg border-0">
                 
                 <div class="card-header card-header-formal py-3">
@@ -52,30 +64,44 @@
                         
                         <div class="section-title text-uppercase">Vinculación con el Sistema</div>
                         <div class="row g-3 mb-4">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label">ID Vivienda (Referencia Catastral)</label>
+<select name="id_vivienda" class="form-select" required>
+            <option value="">Seleccione una propiedad...</option>
+            {% for v in vivienda %}
+                <option value="{{ v.id_vivienda }}">
+                    ID: {{ v.id_vivienda }} - Localidad: {{ v.localidad }} ({{ v.ciudad }})
+                </option>
+            {% endfor %}
+        </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Asignar Perito Responsable</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-white"><i class="bi bi-house"></i></span>
-                                    <input type="number" name="id_vivienda" class="form-control" placeholder="Ej: 502" required>
+                                    <span class="input-group-text bg-white"><i class="bi bi-person-workspace"></i></span>
+<select name="id_perito" class="form-select">
+    <option value="">-- Sin Asignar / Pendiente --</option>
+    {% for u in usuarios %}
+        {# Filtramos para mostrar solo a los usuarios cuyo rol sea igual a PERITO #}
+        {% if u.rol == 'PERITO' or u.nombre_rol == 'PERITO' or u.rol.nombre == 'PERITO' %}
+            <option value="{{ u.id_perito or u.idUsuario or u.primerNombre or u.primerApellido }}">
+                {{ u.usuario }} {{ u.apellido }} (ID: {{ u.idUsuario }})
+            </option>
+        {% endif %}
+    {% endfor %}
+</select>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-    <label class="form-label fw-bold">Asignar Perito Responsable</label>
- <select name="id_perito" class="form-select" required>
-    <option value="">Seleccione un perito...</option>
-    {% for p in perito %}  <option value="{{ p.id_perito }}">ID: {{ p.id_perito }}</option>
-    {% endfor %}
-</select>
-</div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label">Asignar a Usuario Propietario</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-white"><i class="bi bi-person-badge"></i></span>
                                     <select name="id_usuario" class="form-select" required>
                                         <option value="">Seleccione un usuario...</option>
                                         {% for u in usuarios %}
-                                            <option value="{{ u.idUsuario }}">{{ u.primerNombre }} {{ u.primerApellido }}</option>
+                                            <option value="{{ u.idUsuario }}">{{ u.usuario }} {{ u.apellido }} (ID: {{ u.idUsuario }})</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -86,11 +112,11 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Nombre del Solicitante</label>
-                                <input type="text" name="solicitante" class="form-control" placeholder="Nombre completo">
+                                <input type="text" name="solicitante" class="form-control" placeholder="Nombre completo legible" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Correo de Contacto</label>
-                                <input type="email" name="correo" class="form-control" placeholder="ejemplo@correo.com">
+                                <input type="email" name="correo" class="form-control" placeholder="ejemplo@correo.com" required>
                             </div>
                         </div>
 
@@ -98,7 +124,7 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
                                 <label class="form-label">Área del Inmueble (m²)</label>
-                                <input type="number" step="0.01" name="area_m2" id="area" class="form-control" placeholder="0.00" required>
+                                <input type="number" step="0.01" name="area_m2" id="area" class="form-control" placeholder="0.00" required oninput="calcularAvaluo()">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Precio por m² ($)</label>
@@ -108,21 +134,21 @@
                                 <label class="form-label">Valor Total del Avalúo</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light fw-bold">$</span>
-                                    <input type="number" step="0.01" name="valor_total" id="total" class="form-control bg-light fw-bold text-primary" readonly>
+                                    <input type="number" step="0.01" name="valor_total" id="total" class="form-control bg-light fw-bold text-primary" placeholder="0.00" required readonly>
                                 </div>
                             </div>
                             
                             <div class="col-md-6">
                                 <label class="form-label">Ubicación / Localidad</label>
-                                <input type="text" name="localidad" class="form-control" placeholder="Barrio o Localidad" required>
+                                <input type="text" name="localidad" class="form-control" placeholder="Barrio o Localidad de Bogotá" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Antigüedad (Años)</label>
-                                <input type="number" name="antiguedad" class="form-control" placeholder="Años">
+                                <input type="text" name="antiguedad" class="form-control" placeholder="Ej: 5" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Estrato Social</label>
-                                <select name="estrato" class="form-select">
+                                <select name="estrato" class="form-select" required>
                                     {% for i in range(1, 7) %}
                                         <option value="{{ i }}">{{ i }}</option>
                                     {% endfor %}
@@ -130,29 +156,22 @@
                             </div>
                         </div>
 
-                        <div class="row g-3 mb-4 align-items-center">
+                        <div class="row g-3 mb-4">
                             <div class="col-md-4">
-                                <div class="form-check form-switch card p-3 shadow-sm border-0">
-                                    <input class="form-check-input ms-0 me-2" type="checkbox" name="parqueadero" id="parqueadero">
-                                    <label class="form-check-label fw-bold" for="parqueadero">¿Incluye Parqueadero?</label>
+                                <label class="form-label fw-bold">¿Cuenta con Parqueadero?</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-p-square"></i></span>
+                                    <select name="parqueaderos" class="form-select" required>
+                                        <option value="1">Sí, incluye parqueadero</option>
+                                        <option value="0" selected>No incluye parqueadero</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-8">
-                                <label class="form-label">Observaciones Adicionales</label>
-                                <textarea name="descripcion" class="form-control" rows="2" placeholder="Notas sobre el estado del inmueble..."></textarea>
+                                <label class="form-label">Descripción / Observaciones Adicionales</label>
+                                <textarea name="descripcion" class="form-control" rows="3" placeholder="Notas sobre el estado físico, acabados o restricciones del inmueble..."></textarea>
                             </div>
                         </div>
-
-                        <div class="col-md-4">
-    <label class="form-label fw-bold">¿Cuenta con Parqueadero?</label>
-    <div class="input-group">
-        <span class="input-group-text bg-white"><i class="bi bi-p-square"></i></span>
-        <select name="parqueaderos" class="form-select">
-            <option value="1">Sí, incluye parqueadero</option>
-            <option value="0" selected>No incluye parqueadero</option>
-        </select>
-    </div>
-</div>
 
                         <hr class="my-4">
                         <div class="d-flex justify-content-end gap-3">
@@ -177,6 +196,7 @@
         const precio = parseFloat(document.getElementById('precio').value) || 0;
         const totalInput = document.getElementById('total');
         
+        // Multiplicación directa calculada en el cliente antes del envío al backend
         const total = (area * precio).toFixed(2);
         totalInput.value = total;
     }
